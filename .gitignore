@@ -94,3 +94,9 @@ coverage.xml
 
 # Claude Code local settings
 .claude/
+
+# Local documentation (fetched API docs)
+ai_docs/
+
+# Local MCP servers
+mcp_servers/
