@@ -56,9 +56,7 @@ class TestFileUploadSecurity:
 
     def test_file_size_limit_enforcement(self, client: TestClient) -> None:
         """Test that file size limits are enforced."""
-        # Create oversized file (> 25 MB)
-        large_size = 30 * 1024 * 1024  # 30 MB
-        # Note: Actually creating this would be memory-intensive
+        # Note: Actually creating oversized files (> 25 MB) would be memory-intensive
         # In practice, FastAPI's max_upload_size setting handles this
 
         # Test with reasonable size that should pass
@@ -66,7 +64,7 @@ class TestFileUploadSecurity:
         files = {"file": ("test.mp3", normal_file, "audio/mpeg")}
 
         with patch("backend.api.routes.v1.audio.get_openai_service") as mock_service_func, \
-             patch("backend.api.routes.v1.audio.convert_to_mp3") as mock_convert:
+             patch("backend.api.routes.v1.audio.convert_to_mp3"):
 
             mock_service = MagicMock()
             mock_service.transcribe_audio = AsyncMock(
@@ -289,7 +287,7 @@ class TestAPISecurityHeaders:
         # Try to send wrong content type for JSON endpoint
         response = client.post(
             "/api/v1/audio/translate",
-            data="not-json",
+            content=b"not-json",
             headers={"content-type": "text/plain"}
         )
 
@@ -330,7 +328,7 @@ class TestRateLimitingAndDOS:
         """Test handling of malformed JSON input."""
         response = client.post(
             "/api/v1/audio/translate",
-            data="{invalid json}",
+            content=b"{invalid json}",
             headers={"content-type": "application/json"}
         )
 

@@ -107,25 +107,25 @@ class TestCustomExceptions:
 
     def test_exceptions_can_be_raised_and_caught(self) -> None:
         """Test that exceptions can be raised and caught properly."""
-        with pytest.raises(AudioProcessingError) as exc_info:
+        with pytest.raises(AudioProcessingError) as exc_info_audio:
             raise AudioProcessingError("Test error")
-        assert str(exc_info.value) == "Test error"
+        assert str(exc_info_audio.value) == "Test error"
 
-        with pytest.raises(TranscriptionError) as exc_info:
+        with pytest.raises(TranscriptionError) as exc_info_transcription:
             raise TranscriptionError("Test error")
-        assert str(exc_info.value) == "Test error"
+        assert str(exc_info_transcription.value) == "Test error"
 
-        with pytest.raises(TranslationError) as exc_info:
+        with pytest.raises(TranslationError) as exc_info_translation:
             raise TranslationError("Test error")
-        assert str(exc_info.value) == "Test error"
+        assert str(exc_info_translation.value) == "Test error"
 
-        with pytest.raises(TTSError) as exc_info:
+        with pytest.raises(TTSError) as exc_info_tts:
             raise TTSError("Test error")
-        assert str(exc_info.value) == "Test error"
+        assert str(exc_info_tts.value) == "Test error"
 
-        with pytest.raises(FileValidationError) as exc_info:
+        with pytest.raises(FileValidationError) as exc_info_file:
             raise FileValidationError("Test error")
-        assert str(exc_info.value) == "Test error"
+        assert str(exc_info_file.value) == "Test error"
 
     def test_exception_details_none_defaults_to_empty_dict(self) -> None:
         """Test that None details parameter defaults to empty dict."""

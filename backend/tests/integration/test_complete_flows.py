@@ -17,9 +17,7 @@ class TestCompleteWorkflows:
         audio_file = ("test.mp3", io.BytesIO(b"fake-audio-data"), "audio/mpeg")
 
         with patch("backend.api.routes.v1.audio.get_openai_service") as mock_service_func, \
-             patch("backend.api.routes.v1.audio.convert_to_mp3") as mock_convert:
-
-            # Make mock_convert create actual temp file
+             patch("backend.api.routes.v1.audio.convert_to_mp3"):
 
             mock_service = MagicMock()
 
@@ -78,8 +76,7 @@ class TestCompleteWorkflows:
     def test_transcribe_edit_translate_flow(self, client: TestClient) -> None:
         """Test workflow with manual editing: transcribe → edit → translate."""
         with patch("backend.api.routes.v1.audio.get_openai_service") as mock_service_func, \
-             patch("backend.api.routes.v1.audio.convert_to_mp3") as mock_convert:
-
+             patch("backend.api.routes.v1.audio.convert_to_mp3"):
 
             mock_service = MagicMock()
             mock_service.transcribe_audio = AsyncMock(
@@ -97,7 +94,6 @@ class TestCompleteWorkflows:
                 files={"file": audio_file}
             )
             assert transcribe_response.status_code == 200
-            original_text = transcribe_response.json()["text"]
 
             # Step 2: User edits transcription (client-side)
             edited_text = "Edited transcription"
@@ -128,7 +124,7 @@ class TestCompleteWorkflows:
                 "German": "Hallo, wie geht es dir?",
             }
 
-            def mock_translate(text: str, source: str, target: str) -> str:
+            def mock_translate(_text: str, _source: str, target: str) -> str:
                 return translations.get(target, "Translated")
 
             mock_service.translate_text = AsyncMock(side_effect=mock_translate)
@@ -278,11 +274,10 @@ class TestCompleteWorkflows:
         ]
 
         with patch("backend.api.routes.v1.audio.get_openai_service") as mock_service_func, \
-             patch("backend.api.routes.v1.audio.convert_to_mp3") as mock_convert:
+             patch("backend.api.routes.v1.audio.convert_to_mp3"):
 
             mock_service = MagicMock()
             mock_service.transcribe_audio = AsyncMock(
-
                 return_value=("Transcription", "en")
             )
             mock_service_func.return_value = mock_service
@@ -305,11 +300,10 @@ class TestErrorHandlingIntegration:
         from backend.core.exceptions import TranscriptionError
 
         with patch("backend.api.routes.v1.audio.get_openai_service") as mock_service_func, \
-             patch("backend.api.routes.v1.audio.convert_to_mp3") as mock_convert:
+             patch("backend.api.routes.v1.audio.convert_to_mp3"):
 
             mock_service = MagicMock()
             mock_service.transcribe_audio = AsyncMock(
-
                 side_effect=TranscriptionError("Transcription failed")
             )
             mock_service_func.return_value = mock_service

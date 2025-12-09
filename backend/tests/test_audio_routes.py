@@ -1,7 +1,6 @@
 """Unit tests for audio processing endpoints."""
 
 import io
-from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
@@ -9,7 +8,6 @@ from fastapi.testclient import TestClient
 
 from backend.core.exceptions import (
     AudioProcessingError,
-    FileValidationError,
     TranscriptionError,
     TranslationError,
     TTSError,
@@ -26,7 +24,7 @@ class TestTranscribeEndpoint:
         files = {"file": ("test.mp3", io.BytesIO(audio_content), "audio/mpeg")}
 
         with patch("backend.api.routes.v1.audio.get_openai_service") as mock_service_func, \
-             patch("backend.api.routes.v1.audio.convert_to_mp3") as mock_convert:
+             patch("backend.api.routes.v1.audio.convert_to_mp3"):
 
             mock_service = MagicMock()
             mock_service.transcribe_audio = AsyncMock(
@@ -47,8 +45,7 @@ class TestTranscribeEndpoint:
         files = {"file": ("test.ogg", io.BytesIO(audio_content), "audio/ogg")}
 
         with patch("backend.api.routes.v1.audio.get_openai_service") as mock_service_func, \
-             patch("backend.api.routes.v1.audio.convert_to_mp3") as mock_convert:
-
+             patch("backend.api.routes.v1.audio.convert_to_mp3"):
 
             mock_service = MagicMock()
             mock_service.transcribe_audio = AsyncMock(
@@ -95,8 +92,7 @@ class TestTranscribeEndpoint:
         files = {"file": ("test.mp3", io.BytesIO(b"fake-audio"), "audio/mpeg")}
 
         with patch("backend.api.routes.v1.audio.get_openai_service") as mock_service_func, \
-             patch("backend.api.routes.v1.audio.convert_to_mp3") as mock_convert:
-
+             patch("backend.api.routes.v1.audio.convert_to_mp3"):
 
             mock_service = MagicMock()
             mock_service.transcribe_audio = AsyncMock(
@@ -114,8 +110,8 @@ class TestTranscribeEndpoint:
         files = {"file": ("test.mp3", io.BytesIO(b"fake-audio"), "audio/mpeg")}
 
         with patch("backend.api.routes.v1.audio.get_openai_service") as mock_service_func, \
-             patch("backend.api.routes.v1.audio.convert_to_mp3") as mock_convert, \
-             patch("backend.api.routes.v1.audio.cleanup_files") as mock_cleanup:
+             patch("backend.api.routes.v1.audio.convert_to_mp3"), \
+             patch("backend.api.routes.v1.audio.cleanup_files"):
 
             mock_service = MagicMock()
             mock_service.transcribe_audio = AsyncMock(

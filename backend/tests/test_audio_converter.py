@@ -129,7 +129,7 @@ class TestAudioConverter:
         input_file.write_bytes(b"fake-audio-data")
 
         # Mock export to actually create the file
-        def mock_export(path: str, format: str) -> None:
+        def mock_export(path: str, _format: str) -> None:
             Path(path).write_bytes(b"fake-mp3-data")
 
         mock_segment = mock_audio_segment.from_file.return_value
@@ -143,7 +143,6 @@ class TestAudioConverter:
     async def test_convert_to_mp3_uses_thread_pool(
         self,
         tmp_path: Path,
-        mock_audio_segment: MagicMock,
     ) -> None:
         """Test that conversion is offloaded to thread pool (async execution)."""
         input_file = tmp_path / "input.ogg"

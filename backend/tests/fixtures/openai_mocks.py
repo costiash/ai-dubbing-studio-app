@@ -1,6 +1,5 @@
 """OpenAI API mock responses for testing."""
 
-from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 
@@ -106,20 +105,18 @@ def create_mock_openai_client(
 def create_mock_openai_error(
     error_type: str = "APIError",
     message: str = "OpenAI API error",
-    status_code: int = 500,
 ) -> Exception:
     """Create a mock OpenAI API error.
 
     Args:
         error_type: Type of error to simulate
         message: Error message
-        status_code: HTTP status code
 
     Returns:
         Mock exception object
     """
     error = Exception(message)
-    error.__class__.__name__ = error_type  # type: ignore[attr-defined]
+    error.__class__.__name__ = error_type
 
     return error
 

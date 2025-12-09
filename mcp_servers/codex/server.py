@@ -90,9 +90,7 @@ def _should_include_file(path: Path) -> bool:
         return False
     if "__pycache__" in str(path) or "node_modules" in str(path):
         return False
-    if ".git" in str(path):
-        return False
-    return True
+    return ".git" not in str(path)
 
 
 def _read_file_safe(path: Path, max_size: int = MAX_FILE_SIZE) -> str | None:

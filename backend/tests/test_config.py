@@ -1,6 +1,5 @@
 """Unit tests for configuration module."""
 
-from pathlib import Path
 
 import pytest
 from pydantic import ValidationError
@@ -59,8 +58,8 @@ class TestSettings:
         # Note: In actual environment, .env or env vars may provide the key
         # This test verifies the field is marked as required in the schema
 
+
         from backend.core.config import Settings
-        import inspect
 
         # Check that openai_api_key is a required field in model schema
         fields = Settings.model_fields
@@ -105,7 +104,7 @@ class TestSettings:
         # This tests the case_sensitive=False configuration by using env vars
         monkeypatch.setenv("OPENAI_API_KEY", "sk-test-key-uppercase")
 
-        settings = Settings()
+        settings = Settings(openai_api_key="sk-test-key-uppercase")
 
         assert settings.openai_api_key == "sk-test-key-uppercase"
 

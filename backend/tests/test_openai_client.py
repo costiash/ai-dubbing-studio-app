@@ -10,9 +10,6 @@ from backend.services.openai_client import OpenAIService, get_openai_service
 from backend.tests.fixtures.openai_mocks import (
     create_mock_openai_client,
     create_mock_openai_error,
-    create_mock_transcription_response,
-    create_mock_translation_response,
-    create_mock_tts_response,
 )
 
 
@@ -27,7 +24,7 @@ class TestOpenAIService:
         assert service.api_key == "sk-test-key-12345"
         assert service.client is not None
 
-    def test_init_without_api_key_uses_settings(self, test_settings: MagicMock) -> None:
+    def test_init_without_api_key_uses_settings(self) -> None:
         """Test OpenAI service initialization uses settings if no key provided."""
         service = OpenAIService()
 

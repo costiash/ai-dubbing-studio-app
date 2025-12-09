@@ -17,7 +17,6 @@ import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
-
 DEFAULT_MODEL = "gemini-3-pro-preview"
 # Directory containing this module - used as cwd for GEMINI.md discovery
 _MODULE_DIR = Path(__file__).parent.resolve()
@@ -116,7 +115,7 @@ class GeminiClient:
 
             return GeminiResponse(success=True, output=output)
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             return GeminiResponse(
                 success=False, output="", error=f"Timeout after {timeout}s"
             )

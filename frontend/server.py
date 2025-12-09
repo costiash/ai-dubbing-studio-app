@@ -9,15 +9,15 @@ Usage:
 Default port: 3000
 """
 
-import sys
 import os
+import sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 
 class CORSRequestHandler(SimpleHTTPRequestHandler):
     """HTTP request handler with CORS headers"""
 
-    def end_headers(self):
+    def end_headers(self) -> None:
         # Add CORS headers for development
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -25,13 +25,13 @@ class CORSRequestHandler(SimpleHTTPRequestHandler):
         self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
         super().end_headers()
 
-    def do_OPTIONS(self):
+    def do_OPTIONS(self) -> None:
         """Handle preflight OPTIONS requests"""
         self.send_response(200)
         self.end_headers()
 
 
-def run_server(port=3000):
+def run_server(port: int = 3000) -> None:
     """Run the HTTP server"""
     server_address = ('', port)
     httpd = HTTPServer(server_address, CORSRequestHandler)

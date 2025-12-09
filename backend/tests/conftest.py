@@ -2,8 +2,9 @@
 
 import io
 import tempfile
+from collections.abc import Generator
 from pathlib import Path
-from typing import Any, BinaryIO, Generator
+from typing import Any, BinaryIO
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
@@ -38,7 +39,7 @@ def test_settings() -> Settings:
 
 
 @pytest.fixture
-def client(test_settings: Settings) -> Generator[TestClient, None, None]:
+def client(test_settings: Settings) -> Generator[TestClient]:
     """Create FastAPI test client with overridden test settings.
 
     This allows tests to run without requiring OPENAI_API_KEY in environment.
@@ -220,17 +221,14 @@ def sample_text_spanish() -> str:
 
 
 @pytest.fixture(autouse=True)
-def cleanup_temp_files(tmp_path: Path) -> Generator[None, None, None]:
+def cleanup_temp_files() -> Generator[None]:
     """Automatically clean up temporary files after each test.
-
-    Args:
-        tmp_path: Pytest temporary directory fixture
 
     Yields:
         None (performs cleanup after test)
     """
     yield
-    # Cleanup happens automatically with tmp_path fixture
+    # Cleanup happens automatically with pytest's tmp_path fixture
     # This is here as a hook for custom cleanup if needed
 
 

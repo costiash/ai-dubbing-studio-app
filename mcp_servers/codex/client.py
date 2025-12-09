@@ -20,8 +20,7 @@ from enum import Enum
 from pathlib import Path
 from typing import Any
 
-from openai import AsyncOpenAI, APIError, APITimeoutError, RateLimitError
-
+from openai import APIError, APITimeoutError, AsyncOpenAI, RateLimitError
 
 DEFAULT_MODEL = "gpt-5.1-codex-max"
 DEFAULT_TIMEOUT = 300.0  # 5 minutes for complex analysis
@@ -151,7 +150,7 @@ class CodexClient:
                     timeout=timeout,
                 )
                 return response
-            except (APITimeoutError, asyncio.TimeoutError) as e:
+            except (TimeoutError, APITimeoutError) as e:
                 last_error = e
                 if attempt < MAX_RETRIES - 1:
                     await asyncio.sleep(RETRY_DELAY * (2**attempt))
