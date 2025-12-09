@@ -54,6 +54,9 @@ env/
 # mypy
 .mypy_cache/
 
+# Ruff
+.ruff_cache/
+
 # Streamlit
 .streamlit/secrets.toml
 

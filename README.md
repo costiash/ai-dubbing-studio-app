@@ -69,6 +69,46 @@ The application opens at `http://localhost:8501`. Enter your OpenAI API key in t
 | pydub | Audio format conversion |
 | audioop-lts | Audio operations (Python 3.13 compatibility) |
 
+## Documentation
+
+Comprehensive documentation is available in the [`docs/`](docs/) directory:
+
+- **[Quick Start](docs/development/QUICK_START.md)** - Get started in 5 minutes
+- **[API Documentation](docs/api/API_CONTRACT.md)** - Backend API reference
+- **[Architecture](docs/architecture/ARCHITECTURE_DIAGRAM.md)** - System design and data flow
+- **[Testing Guide](docs/development/TESTING_GUIDE.md)** - Running and writing tests
+- **[Deployment](docs/deployment/DEPLOYMENT_GUIDE.md)** - Production deployment instructions
+- **[Claude Instructions](docs/development/CLAUDE_INSTRUCTIONS.md)** - Working with Claude Code
+
+See [`docs/README.md`](docs/README.md) for the complete documentation index.
+
+## Project Structure
+
+```
+ai-dubbing-studio-app/
+├── backend/              # FastAPI backend server
+│   ├── api/             # API routes and endpoints
+│   ├── core/            # Core configuration
+│   ├── schemas/         # Pydantic schemas
+│   ├── services/        # Business logic services
+│   ├── utils/           # Utility functions
+│   └── tests/           # Test suite (114 tests, 76% coverage)
+├── frontend/            # JavaScript frontend application
+│   ├── components/      # UI components
+│   ├── modules/         # JavaScript modules
+│   └── tests/           # Frontend tests
+├── docs/                # Documentation
+│   ├── api/            # API documentation
+│   ├── architecture/   # Architecture diagrams
+│   ├── development/    # Developer guides
+│   ├── deployment/     # Deployment guides
+│   └── reference/      # External references
+├── design/              # Design assets
+├── scripts/             # Utility scripts
+├── .github/             # GitHub Actions workflows
+└── mcp_servers/         # MCP server implementations
+```
+
 ## License
 
 MIT
