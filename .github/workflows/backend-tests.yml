@@ -1,0 +1,156 @@
+name: Backend Tests
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Backend Test Suite
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: ['3.13']
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install FFmpeg (required for pydub)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Verify FFmpeg installation
+        run: ffmpeg -version
+
+      - name: Install dependencies
+        run: |
+          uv sync --all-groups
+
+      - name: Run linting (Ruff)
+        run: |
+          uv run ruff check backend/ --output-format=github
+        continue-on-error: false
+
+      - name: Run type checking (mypy)
+        run: |
+          uv run mypy backend/
+        continue-on-error: true
+
+      - name: Run unit tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-test-key-for-ci' }}
+        run: |
+          uv run pytest backend/tests/ \
+            -m "unit" \
+            --cov=backend \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --junitxml=test-results/unit-tests.xml \
+            -v
+
+      - name: Run integration tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-test-key-for-ci' }}
+        run: |
+          uv run pytest backend/tests/ \
+            -m "integration" \
+            --cov=backend \
+            --cov-append \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --junitxml=test-results/integration-tests.xml \
+            -v
+
+      - name: Run security tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-test-key-for-ci' }}
+        run: |
+          uv run pytest backend/tests/ \
+            -m "security" \
+            --cov=backend \
+            --cov-append \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            --junitxml=test-results/security-tests.xml \
+            -v
+
+      - name: Run all tests with coverage
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY || 'sk-test-key-for-ci' }}
+        run: |
+          uv run pytest backend/tests/ \
+            --cov=backend \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --junitxml=test-results/all-tests.xml \
+            -v
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage.xml
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: test-results/
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: htmlcov/
+
+      - name: Check coverage threshold
+        run: |
+          uv run coverage report --fail-under=80 || echo "Coverage below 80% - consider adding more tests"
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request'
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          MINIMUM_GREEN: 80
+          MINIMUM_ORANGE: 60
+
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+
+    steps:
+      - name: Download test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+
+      - name: Publish test results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            test-results/**/*.xml
+          check_name: Backend Test Results

@@ -1,0 +1,360 @@
+/**
+ * Layout & Page-level Styles - AI Dubbing Studio
+ *
+ * Responsive layout structure for the application
+ * Mobile-first approach with flexbox/grid
+ */
+
+/* ========================================================================
+   BASE STYLES
+   ======================================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-primary);
+  transition: background-color var(--duration-normal) ease,
+              color var(--duration-normal) ease;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ========================================================================
+   APP CONTAINER
+   ======================================================================== */
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+@media (min-width: 640px) {
+  .app-container {
+    padding: var(--space-6);
+  }
+}
+
+@media (min-width: 1024px) {
+  .app-container {
+    max-width: 1024px;
+    padding: var(--space-8);
+  }
+}
+
+/* ========================================================================
+   HEADER
+   ======================================================================== */
+
+.app-header {
+  text-align: center;
+  margin-bottom: var(--space-8);
+  padding-top: var(--space-6);
+}
+
+.app-title {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-family-display);
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  color: var(--color-text-primary);
+  letter-spacing: var(--letter-spacing-tight);
+}
+
+@media (min-width: 640px) {
+  .app-title {
+    font-size: var(--font-size-4xl);
+  }
+}
+
+.app-description {
+  margin: 0;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-normal);
+}
+
+/* ========================================================================
+   MAIN CONTENT
+   ======================================================================== */
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  margin: 0 auto;
+}
+
+/* Section container */
+.section {
+  margin-bottom: var(--space-12);
+}
+
+.section:last-child {
+  margin-bottom: 0;
+}
+
+/* Section header */
+.section-header {
+  margin-bottom: var(--space-6);
+}
+
+.section-title {
+  margin: 0 0 var(--space-2);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.section-description {
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+}
+
+/* ========================================================================
+   FOOTER
+   ======================================================================== */
+
+.app-footer {
+  text-align: center;
+  padding: var(--space-8) 0 var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+  border-top: 1px solid var(--color-border-primary);
+  margin-top: var(--space-16);
+}
+
+/* ========================================================================
+   COMPARISON GRID (Original vs Generated)
+   ======================================================================== */
+
+.comparison-grid {
+  display: grid;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+
+@media (min-width: 768px) {
+  .comparison-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ========================================================================
+   BUTTON GROUP
+   ======================================================================== */
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.button-group--center {
+  justify-content: center;
+}
+
+.button-group--end {
+  justify-content: flex-end;
+}
+
+/* ========================================================================
+   TRANSCRIPT DISPLAY (Read-only)
+   ======================================================================== */
+
+.transcript-display {
+  padding: var(--space-4);
+  background-color: var(--color-surface-secondary);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-4);
+}
+
+.transcript-display p {
+  margin: 0;
+  font-size: var(--font-size-base);
+  line-height: var(--line-height-relaxed);
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+/* ========================================================================
+   LOADING OVERLAY
+   ======================================================================== */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  background-color: var(--color-surface-overlay);
+  z-index: var(--z-modal);
+  backdrop-filter: blur(4px);
+}
+
+.overlay__content {
+  text-align: center;
+  color: var(--color-text-inverse);
+}
+
+.overlay__message {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--theme-text-1);
+}
+
+/* ========================================================================
+   TOAST NOTIFICATIONS
+   ======================================================================== */
+
+.toast {
+  position: fixed;
+  bottom: var(--space-6);
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: 500px;
+  width: calc(100% - var(--space-8));
+  padding: var(--space-4);
+  background-color: var(--color-surface-elevated);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  z-index: var(--z-tooltip);
+  animation: toast-enter var(--duration-normal) var(--ease-out);
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.toast--error {
+  background-color: var(--color-error-bg);
+  border-color: var(--color-error-border);
+  color: var(--color-error);
+}
+
+.toast__content {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.toast__icon {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+}
+
+.toast__message {
+  flex: 1;
+  font-size: var(--font-size-base);
+}
+
+.toast__close {
+  flex-shrink: 0;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: inherit;
+  font-size: var(--font-size-xl);
+  line-height: 1;
+  padding: 0;
+}
+
+.toast__close:hover {
+  opacity: 0.7;
+}
+
+/* ========================================================================
+   LANGUAGE SELECTOR GROUP
+   ======================================================================== */
+
+.language-selectors {
+  display: grid;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+@media (min-width: 640px) {
+  .language-selectors {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ========================================================================
+   UTILITY CLASSES
+   ======================================================================== */
+
+.hidden {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.mt-4 { margin-top: var(--space-4); }
+.mt-6 { margin-top: var(--space-6); }
+.mb-4 { margin-bottom: var(--space-4); }
+.mb-6 { margin-bottom: var(--space-6); }
+
+/* ========================================================================
+   RESPONSIVE UTILITIES
+   ======================================================================== */
+
+@media (max-width: 639px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 640px) {
+  .hide-desktop {
+    display: none !important;
+  }
+}

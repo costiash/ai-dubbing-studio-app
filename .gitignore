@@ -88,15 +88,12 @@ coverage.xml
 
 # pytest
 .pytest_cache/
+test-results/
+.tox/
+
+# Test artifacts
+*.pyc
+.cache/
 
 # MCP configuration (contains local paths/secrets)
 .mcp.json
-
-# Claude Code local settings
-.claude/
-
-# Local documentation (fetched API docs)
-ai_docs/
-
-# Local MCP servers
-mcp_servers/

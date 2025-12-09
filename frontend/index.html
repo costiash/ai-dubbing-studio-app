@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Transform audio across languages with AI-powered transcription, translation, and text-to-speech">
+
+  <title>AI Dubbing Studio - Audio Translation Tool</title>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="/styles/main.css">
+
+  <!-- Theme detection (inline to prevent FOUC - Flash of Unstyled Content) -->
+  <script>
+    // Detect theme preference BEFORE page renders
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const theme = savedTheme || (systemPrefersDark ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  </script>
+</head>
+<body>
+  <!-- App container -->
+  <div id="app" class="app-container">
+
+    <!-- Theme Toggle (fixed top-right) -->
+    <button
+      id="theme-toggle"
+      class="theme-toggle"
+      aria-label="Toggle dark mode"
+      aria-pressed="false"
+    >
+      <svg class="theme-toggle__icon theme-toggle__icon--light" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="5"/>
+        <path d="M12 1v2m0 18v2M4.22 4.22l1.42 1.42m12.72 12.72l1.42 1.42M1 12h2m18 0h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+      </svg>
+      <svg class="theme-toggle__icon theme-toggle__icon--dark" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+    </button>
+
+    <!-- Header -->
+    <header class="app-header">
+      <h1 class="app-title">AI Dubbing Studio</h1>
+      <p class="app-description">
+        Transform audio across languages with AI
+      </p>
+    </header>
+
+    <!-- Main Content Area -->
+    <main id="main-content" class="app-main">
+
+      <!-- Step 1: Upload Audio -->
+      <section id="upload-section" class="section">
+        <div
+          id="upload-zone"
+          class="upload-zone"
+          role="button"
+          tabindex="0"
+          aria-label="Upload audio file. Drag and drop or press enter to browse. Supported formats: MP3, WAV, OGG, M4A. Maximum size: 25 megabytes"
+        >
+          <svg class="upload-zone__icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+          <h2 class="upload-zone__title">Drag & Drop Audio File</h2>
+          <p class="upload-zone__description">or click to browse</p>
+          <p class="upload-zone__description">
+            Supported: MP3, WAV, OGG, M4A (max 25 MB)
+          </p>
+          <input
+            type="file"
+            id="file-input"
+            class="upload-zone__input"
+            accept=".mp3,.wav,.ogg,.m4a,audio/mpeg,audio/wav,audio/ogg,audio/x-m4a"
+            aria-hidden="true"
+          >
+        </div>
+
+        <!-- Progress (hidden initially) -->
+        <div id="upload-progress" class="progress-bar hidden" role="progressbar" aria-label="Upload progress">
+          <div class="progress-bar__fill" style="width: 0%"></div>
+        </div>
+
+        <!-- Waveform visualizer container (hidden initially) -->
+        <div id="waveform-container" style="display: none; margin-top: 1rem;"></div>
+      </section>
+
+      <!-- Step 2: Transcribe & Translate -->
+      <section id="transcribe-section" class="section hidden">
+
+        <!-- Original audio player -->
+        <div class="card">
+          <div class="card__header">
+            <h2 class="card__title">Original Audio</h2>
+          </div>
+          <div id="original-audio-player" class="audio-player">
+            <!-- Audio player controls will be injected by JavaScript -->
+          </div>
+        </div>
+
+        <!-- Language Selectors -->
+        <div class="language-selectors">
+          <div class="form-group">
+            <label for="source-language" class="form-label">
+              Source Language
+            </label>
+            <select
+              id="source-language"
+              class="form-select"
+              aria-describedby="source-lang-help"
+            >
+              <option value="hebrew">Hebrew</option>
+              <option value="russian">Russian</option>
+              <option value="english">English</option>
+              <option value="spanish">Spanish</option>
+              <option value="french">French</option>
+              <option value="german">German</option>
+              <option value="italian">Italian</option>
+              <option value="portuguese">Portuguese</option>
+              <option value="chinese">Chinese</option>
+              <option value="japanese">Japanese</option>
+              <option value="korean">Korean</option>
+              <option value="arabic">Arabic</option>
+            </select>
+            <span id="source-lang-help" class="form-helper">
+              Detected from audio (you can change if incorrect)
+            </span>
+          </div>
+
+          <div class="form-group">
+            <label for="target-language" class="form-label">
+              Target Language
+            </label>
+            <select
+              id="target-language"
+              class="form-select"
+            >
+              <option value="russian">Russian</option>
+              <option value="hebrew">Hebrew</option>
+              <option value="english">English</option>
+              <option value="spanish">Spanish</option>
+              <option value="french">French</option>
+              <option value="german">German</option>
+              <option value="italian">Italian</option>
+              <option value="portuguese">Portuguese</option>
+              <option value="chinese">Chinese</option>
+              <option value="japanese">Japanese</option>
+              <option value="korean">Korean</option>
+              <option value="arabic">Arabic</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Transcript editor -->
+        <div class="card">
+          <div class="card__header">
+            <h2 class="card__title">Transcript</h2>
+            <p class="card__description">Review and edit the transcription before translating</p>
+          </div>
+          <div class="transcript-box">
+            <textarea
+              id="transcript-editor"
+              class="transcript-box__textarea"
+              placeholder="Transcription will appear here..."
+              aria-label="Transcript editor. You can edit the text before translating."
+            ></textarea>
+            <span id="char-count" class="transcript-box__char-count" aria-live="polite">
+              0 / 50,000
+            </span>
+          </div>
+        </div>
+
+        <!-- Voice Selection -->
+        <div class="form-group">
+          <label for="voice-select" class="form-label">
+            Voice
+          </label>
+          <select id="voice-select" class="form-select">
+            <option value="alloy">Alloy (Neutral, balanced)</option>
+            <option value="echo">Echo (Male, clear)</option>
+            <option value="fable">Fable (British accent)</option>
+            <option value="onyx" selected>Onyx (Deep, authoritative)</option>
+            <option value="nova">Nova (Female, energetic)</option>
+            <option value="shimmer">Shimmer (Female, warm)</option>
+          </select>
+        </div>
+
+        <!-- TTS Model Selection -->
+        <div class="form-group">
+          <label for="model-select" class="form-label">
+            Quality
+          </label>
+          <select id="model-select" class="form-select">
+            <option value="tts-1" selected>Standard (Faster)</option>
+            <option value="tts-1-hd">High Definition (Slower)</option>
+          </select>
+        </div>
+
+        <!-- Translate button -->
+        <div class="button-group">
+          <button id="translate-btn" class="btn btn-primary btn-lg">
+            Translate & Generate Speech
+          </button>
+        </div>
+      </section>
+
+      <!-- Step 3: Results -->
+      <section id="results-section" class="section hidden">
+
+        <!-- Success message -->
+        <div class="alert alert--success">
+          <svg class="alert__icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          <div class="alert__content">
+            <h3 class="alert__title">Audio dubbing complete!</h3>
+            <p class="alert__message">Your translated audio is ready to download.</p>
+          </div>
+        </div>
+
+        <!-- Original vs Generated comparison -->
+        <div class="comparison-grid">
+
+          <!-- Original -->
+          <div class="card">
+            <div class="card__header">
+              <h2 class="card__title" id="original-title">Original Audio</h2>
+            </div>
+            <div id="original-player-result" class="audio-player">
+              <!-- Audio controls -->
+            </div>
+            <div class="transcript-display">
+              <p id="original-transcript"></p>
+            </div>
+          </div>
+
+          <!-- Generated -->
+          <div class="card">
+            <div class="card__header">
+              <h2 class="card__title" id="generated-title">Generated Audio</h2>
+            </div>
+            <div id="generated-player" class="audio-player">
+              <!-- Audio controls -->
+            </div>
+            <div class="transcript-display">
+              <p id="translated-transcript"></p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action buttons -->
+        <div class="button-group button-group--center">
+          <button id="download-btn" class="btn btn-primary btn-lg">
+            <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            Download MP3
+          </button>
+          <button id="start-new-btn" class="btn btn-secondary">
+            Start New
+          </button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Powered by OpenAI API</p>
+    </footer>
+
+  </div>
+
+  <!-- Loading overlay (hidden initially) -->
+  <div id="loading-overlay" class="overlay hidden">
+    <div class="spinner"></div>
+    <div class="overlay__content">
+      <p id="loading-message" class="overlay__message">Processing...</p>
+    </div>
+  </div>
+
+  <!-- Error toast (hidden initially) -->
+  <div id="error-toast" class="toast toast--error hidden" role="alert" aria-live="assertive">
+    <div class="toast__content">
+      <svg class="toast__icon" aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="15" y1="9" x2="9" y2="15"/>
+        <line x1="9" y1="9" x2="15" y2="15"/>
+      </svg>
+      <p id="error-message" class="toast__message"></p>
+      <button class="toast__close" aria-label="Close error message">&times;</button>
+    </div>
+  </div>
+
+  <!-- Scripts (type="module" for ES6 imports) -->
+  <script type="module" src="/scripts/main.js"></script>
+</body>
+</html>

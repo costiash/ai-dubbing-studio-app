@@ -1,0 +1,390 @@
+/**
+ * Design Tokens - AI Dubbing Studio
+ *
+ * A comprehensive token system for Dark/Light theming
+ * Based on research from modern audio UI patterns and accessibility standards
+ *
+ * Design Philosophy:
+ * - "Immersive Interactive Transcripts" - text becomes the controller
+ * - Kinetic feedback for file uploads
+ * - Karaoke-style synchronized highlighting for audio playback
+ * - WCAG 2.1 AA compliance minimum (targeting AAA where possible)
+ */
+
+/* ========================================================================
+   SPACING SCALE (8px grid system)
+   ======================================================================== */
+
+:root {
+  /* Base unit: 4px for granular control */
+  --space-0: 0;
+  --space-1: 0.25rem;   /* 4px - Tight spacing, borders */
+  --space-2: 0.5rem;    /* 8px - Small gaps */
+  --space-3: 0.75rem;   /* 12px - Compact padding */
+  --space-4: 1rem;      /* 16px - Standard padding */
+  --space-5: 1.25rem;   /* 20px - Medium gaps */
+  --space-6: 1.5rem;    /* 24px - Section spacing */
+  --space-8: 2rem;      /* 32px - Large spacing */
+  --space-10: 2.5rem;   /* 40px - XL spacing */
+  --space-12: 3rem;     /* 48px - XXL spacing */
+  --space-16: 4rem;     /* 64px - Section dividers */
+  --space-20: 5rem;     /* 80px - Major sections */
+  --space-24: 6rem;     /* 96px - Hero spacing */
+}
+
+/* ========================================================================
+   TYPOGRAPHY SCALE (1.25 - Major Third ratio)
+   ======================================================================== */
+
+:root {
+  /* Font Families - Distinctive, not generic */
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+                      Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-family-display: 'Space Grotesk', 'Inter', sans-serif; /* For headings */
+  --font-family-mono: 'JetBrains Mono', 'Fira Code', 'Consolas',
+                      'Monaco', 'Courier New', monospace;
+
+  /* Font Sizes (Major Third: 1.25 ratio) */
+  --font-size-xs: 0.64rem;     /* 10.24px */
+  --font-size-sm: 0.8rem;      /* 12.8px */
+  --font-size-base: 1rem;      /* 16px - base size */
+  --font-size-md: 1.125rem;    /* 18px */
+  --font-size-lg: 1.25rem;     /* 20px */
+  --font-size-xl: 1.563rem;    /* 25px */
+  --font-size-2xl: 1.953rem;   /* 31.25px */
+  --font-size-3xl: 2.441rem;   /* 39px */
+  --font-size-4xl: 3.052rem;   /* 48.8px */
+
+  /* Font Weights */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line Heights */
+  --line-height-tight: 1.25;   /* Headings */
+  --line-height-normal: 1.5;   /* Body text */
+  --line-height-relaxed: 1.75; /* Long-form content */
+
+  /* Letter Spacing */
+  --letter-spacing-tight: -0.02em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+  --letter-spacing-wider: 0.05em;
+}
+
+/* ========================================================================
+   BORDER RADIUS
+   ======================================================================== */
+
+:root {
+  --radius-none: 0;
+  --radius-sm: 0.25rem;    /* 4px - Subtle rounding */
+  --radius-md: 0.5rem;     /* 8px - Buttons, inputs */
+  --radius-lg: 0.75rem;    /* 12px - Cards */
+  --radius-xl: 1rem;       /* 16px - Large cards */
+  --radius-2xl: 1.5rem;    /* 24px - Drop zones */
+  --radius-full: 9999px;   /* Pills, avatars */
+}
+
+/* ========================================================================
+   SHADOWS (Layered elevation system)
+   ======================================================================== */
+
+:root {
+  /* Light theme shadows - subtle, soft */
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1),
+               0 1px 2px -1px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+               0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+               0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1),
+               0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+
+  /* Focus ring - accessible in both themes */
+  --shadow-focus: 0 0 0 3px var(--color-focus-ring);
+
+  /* Inset shadow for depth */
+  --shadow-inset: inset 0 2px 4px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================================================
+   Z-INDEX SCALE (Stacking context management)
+   ======================================================================== */
+
+:root {
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+
+/* ========================================================================
+   TRANSITIONS & ANIMATIONS
+   ======================================================================== */
+
+:root {
+  /* Durations */
+  --duration-instant: 0ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+
+  /* Easing functions */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-instant: 0ms;
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+    --duration-slow: 0ms;
+    --duration-slower: 0ms;
+  }
+}
+
+/* ========================================================================
+   SEMANTIC COLORS (Theme-agnostic)
+   These reference the theme-specific tokens below
+   ======================================================================== */
+
+:root {
+  /* Surface colors */
+  --color-surface-primary: var(--theme-surface-1);
+  --color-surface-secondary: var(--theme-surface-2);
+  --color-surface-tertiary: var(--theme-surface-3);
+  --color-surface-elevated: var(--theme-surface-elevated);
+  --color-surface-overlay: var(--theme-surface-overlay);
+
+  /* Text colors */
+  --color-text-primary: var(--theme-text-1);
+  --color-text-secondary: var(--theme-text-2);
+  --color-text-tertiary: var(--theme-text-3);
+  --color-text-disabled: var(--theme-text-disabled);
+  --color-text-inverse: var(--theme-text-inverse);
+
+  /* Border colors */
+  --color-border-primary: var(--theme-border-1);
+  --color-border-secondary: var(--theme-border-2);
+  --color-border-focus: var(--theme-accent);
+
+  /* Interactive colors */
+  --color-interactive: var(--theme-accent);
+  --color-interactive-hover: var(--theme-accent-hover);
+  --color-interactive-active: var(--theme-accent-active);
+  --color-interactive-disabled: var(--theme-text-disabled);
+
+  /* Semantic status colors (consistent across themes) */
+  --color-success: #10b981;
+  --color-success-bg: #d1fae5;
+  --color-success-border: #6ee7b7;
+
+  --color-warning: #f59e0b;
+  --color-warning-bg: #fef3c7;
+  --color-warning-border: #fcd34d;
+
+  --color-error: #ef4444;
+  --color-error-bg: #fee2e2;
+  --color-error-border: #fca5a5;
+
+  --color-info: #3b82f6;
+  --color-info-bg: #dbeafe;
+  --color-info-border: #93c5fd;
+
+  /* Audio-specific colors */
+  --color-audio-waveform: var(--theme-accent);
+  --color-audio-progress: var(--theme-accent-hover);
+  --color-audio-background: var(--theme-surface-2);
+  --color-audio-highlight: var(--theme-accent);
+  --color-audio-timestamp: var(--theme-text-3);
+
+  /* Focus ring */
+  --color-focus-ring: var(--theme-accent-transparent);
+}
+
+/* ========================================================================
+   LIGHT THEME (Default)
+   Based on off-white backgrounds (#F5F5F5) to reduce eye strain
+   ======================================================================== */
+
+[data-theme="light"],
+:root {
+  /* Surface colors - Off-white instead of pure white */
+  --theme-surface-1: #fafafa;        /* Primary background */
+  --theme-surface-2: #f5f5f5;        /* Secondary background */
+  --theme-surface-3: #eeeeee;        /* Tertiary background */
+  --theme-surface-elevated: #ffffff; /* Cards, modals */
+  --theme-surface-overlay: rgba(0, 0, 0, 0.5); /* Modal backdrop */
+
+  /* Text colors - Dark grey instead of pure black */
+  --theme-text-1: #1a1a1a;           /* Primary text (15.8:1 contrast) */
+  --theme-text-2: #404040;           /* Secondary text (8.6:1 contrast) */
+  --theme-text-3: #737373;           /* Tertiary text (4.6:1 contrast - AA) */
+  --theme-text-disabled: #a3a3a3;    /* Disabled state */
+  --theme-text-inverse: #fafafa;     /* Text on dark backgrounds */
+
+  /* Border colors */
+  --theme-border-1: #e5e5e5;         /* Primary borders */
+  --theme-border-2: #d4d4d4;         /* Secondary borders */
+
+  /* Accent colors - Blue for interactivity */
+  --theme-accent: #2563eb;           /* Primary accent (blue-600) */
+  --theme-accent-hover: #1d4ed8;     /* Hover state (blue-700) */
+  --theme-accent-active: #1e40af;    /* Active state (blue-800) */
+  --theme-accent-transparent: rgba(37, 99, 235, 0.2); /* Focus rings */
+
+  /* Shadow color (light themes need darker shadows) */
+  --theme-shadow: rgba(0, 0, 0, 0.1);
+}
+
+/* ========================================================================
+   DARK THEME
+   Based on dark grey (#121212) instead of pure black for OLED
+   ======================================================================== */
+
+[data-theme="dark"] {
+  /* Surface colors - Dark grey, not pure black */
+  --theme-surface-1: #121212;        /* Primary background */
+  --theme-surface-2: #1e1e1e;        /* Secondary background */
+  --theme-surface-3: #2a2a2a;        /* Tertiary background */
+  --theme-surface-elevated: #2d2d2d; /* Cards, modals */
+  --theme-surface-overlay: rgba(0, 0, 0, 0.7); /* Modal backdrop */
+
+  /* Text colors - Off-white for readability */
+  --theme-text-1: #f5f5f5;           /* Primary text (14.5:1 contrast) */
+  --theme-text-2: #d4d4d4;           /* Secondary text (9.3:1 contrast) */
+  --theme-text-3: #a3a3a3;           /* Tertiary text (4.7:1 contrast - AA) */
+  --theme-text-disabled: #737373;    /* Disabled state */
+  --theme-text-inverse: #1a1a1a;     /* Text on light backgrounds */
+
+  /* Border colors */
+  --theme-border-1: #3a3a3a;         /* Primary borders */
+  --theme-border-2: #4a4a4a;         /* Secondary borders */
+
+  /* Accent colors - Lighter blue for dark backgrounds */
+  --theme-accent: #60a5fa;           /* Primary accent (blue-400) */
+  --theme-accent-hover: #93c5fd;     /* Hover state (blue-300) */
+  --theme-accent-active: #bfdbfe;    /* Active state (blue-200) */
+  --theme-accent-transparent: rgba(96, 165, 250, 0.2); /* Focus rings */
+
+  /* Shadow color (dark themes need subtler shadows) */
+  --theme-shadow: rgba(0, 0, 0, 0.5);
+
+  /* Override status color backgrounds for dark theme */
+  --color-success-bg: #064e3b;
+  --color-success-border: #065f46;
+
+  --color-warning-bg: #78350f;
+  --color-warning-border: #92400e;
+
+  --color-error-bg: #7f1d1d;
+  --color-error-border: #991b1b;
+
+  --color-info-bg: #1e3a8a;
+  --color-info-border: #1e40af;
+}
+
+/* ========================================================================
+   TOUCH TARGET SIZES (Accessibility)
+   Minimum 44x44px per WCAG 2.1 Level AA
+   ======================================================================== */
+
+:root {
+  --touch-target-min: 44px;         /* Minimum touch target */
+  --touch-target-comfortable: 48px; /* Comfortable size */
+  --touch-target-large: 56px;       /* Large buttons */
+}
+
+/* ========================================================================
+   RESPONSIVE BREAKPOINTS (Mobile-first)
+   ======================================================================== */
+
+:root {
+  --breakpoint-sm: 640px;   /* Tablets (portrait) */
+  --breakpoint-md: 768px;   /* Tablets (landscape) */
+  --breakpoint-lg: 1024px;  /* Laptops */
+  --breakpoint-xl: 1280px;  /* Desktops */
+  --breakpoint-2xl: 1536px; /* Large screens */
+}
+
+/* ========================================================================
+   COMPONENT-SPECIFIC TOKENS
+   ======================================================================== */
+
+:root {
+  /* Upload Zone */
+  --upload-zone-border: 2px dashed var(--color-border-primary);
+  --upload-zone-border-active: 2px dashed var(--color-interactive);
+  --upload-zone-bg: var(--color-surface-secondary);
+  --upload-zone-bg-hover: var(--color-surface-tertiary);
+  --upload-zone-bg-active: var(--theme-accent-transparent);
+  --upload-zone-min-height: 200px;
+
+  /* Transcript Editor */
+  --transcript-bg: var(--color-surface-primary);
+  --transcript-highlight-bg: var(--theme-accent);
+  --transcript-highlight-text: var(--theme-text-inverse);
+  --transcript-low-confidence: #f59e0b; /* Amber for uncertain words */
+
+  /* Audio Player */
+  --player-height: 64px;
+  --player-bg: var(--color-surface-elevated);
+  --player-progress-bg: var(--color-border-primary);
+  --player-progress-fill: var(--color-interactive);
+  --player-control-size: 40px;
+
+  /* Progress Bar */
+  --progress-height: 4px;
+  --progress-bg: var(--color-border-primary);
+  --progress-fill: var(--color-interactive);
+
+  /* Spinner */
+  --spinner-size: 40px;
+  --spinner-border: 4px;
+  --spinner-color: var(--color-interactive);
+}
+
+/* ========================================================================
+   UTILITY: Dark Mode Detection
+   Auto-detect system preference if no theme is set
+   ======================================================================== */
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    /* Apply dark theme tokens when system prefers dark and no explicit theme set */
+    --theme-surface-1: #121212;
+    --theme-surface-2: #1e1e1e;
+    --theme-surface-3: #2a2a2a;
+    --theme-surface-elevated: #2d2d2d;
+    --theme-surface-overlay: rgba(0, 0, 0, 0.7);
+
+    --theme-text-1: #f5f5f5;
+    --theme-text-2: #d4d4d4;
+    --theme-text-3: #a3a3a3;
+    --theme-text-disabled: #737373;
+    --theme-text-inverse: #1a1a1a;
+
+    --theme-border-1: #3a3a3a;
+    --theme-border-2: #4a4a4a;
+
+    --theme-accent: #60a5fa;
+    --theme-accent-hover: #93c5fd;
+    --theme-accent-active: #bfdbfe;
+    --theme-accent-transparent: rgba(96, 165, 250, 0.2);
+
+    --theme-shadow: rgba(0, 0, 0, 0.5);
+  }
+}

@@ -1,0 +1,16 @@
+/**
+ * Main Stylesheet - AI Dubbing Studio
+ * Imports all design system and layout styles
+ */
+
+/* Design System - Core tokens (theme variables) */
+@import 'design-tokens.css';
+
+/* Component Styles - Reusable UI components */
+@import 'component-styles.css';
+
+/* Layout - Page structure and responsive grid */
+@import 'layout.css';
+
+/* Phase 4: Visual Refinement - "Sonic Laboratory" Aesthetic */
+@import 'visual-refinement.css';
