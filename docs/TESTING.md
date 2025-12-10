@@ -322,7 +322,7 @@ Common fixtures available in `conftest.py`:
 ### Pre-Testing Setup
 
 - [ ] Backend running at `http://localhost:8000`
-- [ ] Frontend running at `http://localhost:3000` (for integration tests)
+- [ ] Frontend running at `http://localhost:8080` (for integration tests)
 - [ ] OpenAI API key configured in `.env`
 - [ ] FFmpeg installed and in PATH
 - [ ] Test audio files prepared (MP3, WAV, OGG, M4A)
@@ -454,7 +454,7 @@ uv run mypy backend/
 **Tests not found:**
 ```bash
 # Ensure you're in project root
-cd /home/rudycosta3/ai-dubbing-studio-app
+cd ai-dubbing-studio-app
 uv run pytest
 ```
 

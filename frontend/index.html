@@ -7,6 +7,9 @@
 
   <title>AI Dubbing Studio - Audio Translation Tool</title>
 
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
   <!-- Stylesheets -->
   <link rel="stylesheet" href="/styles/main.css">
 
@@ -77,6 +80,61 @@
             aria-hidden="true"
           >
         </div>
+
+        <!-- Language Selection (optional) -->
+        <div class="form-group" style="margin-top: 1rem; max-width: 300px;">
+          <label for="audio-language" class="form-label">
+            Language (optional)
+          </label>
+          <select
+            id="audio-language"
+            class="form-select"
+            aria-describedby="audio-lang-help"
+          >
+            <option value="">Auto-detect</option>
+            <option value="en">English</option>
+            <option value="he">Hebrew</option>
+            <option value="ru">Russian</option>
+            <option value="es">Spanish</option>
+            <option value="ar">Arabic</option>
+            <option value="fr">French</option>
+            <option value="de">German</option>
+            <option value="it">Italian</option>
+            <option value="pt">Portuguese</option>
+            <option value="zh">Chinese</option>
+            <option value="ja">Japanese</option>
+            <option value="ko">Korean</option>
+            <option value="hi">Hindi</option>
+            <option value="pl">Polish</option>
+            <option value="uk">Ukrainian</option>
+            <option value="tr">Turkish</option>
+            <option value="nl">Dutch</option>
+            <option value="sv">Swedish</option>
+          </select>
+          <span id="audio-lang-help" class="form-helper">
+            Select if you know the audio language for better accuracy
+          </span>
+        </div>
+
+        <!-- File Preview (hidden until file is uploaded) -->
+        <div id="file-preview" class="file-preview hidden" style="margin-top: 1rem;">
+          <div class="file-preview__info">
+            <span class="file-preview__icon">🎵</span>
+            <span id="file-preview-name" class="file-preview__name"></span>
+            <button id="file-preview-remove" class="file-preview__remove" aria-label="Remove file">✕</button>
+          </div>
+        </div>
+
+        <!-- Transcribe Button (hidden until file is uploaded) -->
+        <button
+          id="transcribe-btn"
+          class="btn btn--primary hidden"
+          style="margin-top: 1rem;"
+          aria-label="Start transcription"
+        >
+          <span class="btn__icon">🎯</span>
+          Start Transcription
+        </button>
 
         <!-- Progress (hidden initially) -->
         <div id="upload-progress" class="progress-bar hidden" role="progressbar" aria-label="Upload progress">
@@ -179,10 +237,14 @@
           </label>
           <select id="voice-select" class="form-select">
             <option value="alloy">Alloy (Neutral, balanced)</option>
+            <option value="ash">Ash (Conversational, friendly)</option>
+            <option value="ballad">Ballad (Expressive, storyteller)</option>
+            <option value="coral">Coral (Warm, approachable)</option>
             <option value="echo">Echo (Male, clear)</option>
             <option value="fable">Fable (British accent)</option>
-            <option value="onyx" selected>Onyx (Deep, authoritative)</option>
             <option value="nova">Nova (Female, energetic)</option>
+            <option value="onyx" selected>Onyx (Deep, authoritative)</option>
+            <option value="sage">Sage (Calm, wise)</option>
             <option value="shimmer">Shimmer (Female, warm)</option>
           </select>
         </div>
@@ -193,9 +255,26 @@
             Quality
           </label>
           <select id="model-select" class="form-select">
-            <option value="tts-1" selected>Standard (Faster)</option>
+            <option value="gpt-4o-mini-tts" selected>Advanced (Voice Control)</option>
+            <option value="tts-1">Standard (Faster)</option>
             <option value="tts-1-hd">High Definition (Slower)</option>
           </select>
+        </div>
+
+        <!-- Voice Instructions (only for gpt-4o-mini-tts) -->
+        <div id="instructions-group" class="form-group">
+          <label for="voice-instructions" class="form-label">
+            Voice Style Instructions
+            <span class="form-label__hint">(Optional)</span>
+          </label>
+          <textarea
+            id="voice-instructions"
+            class="form-textarea"
+            rows="2"
+            maxlength="1000"
+            placeholder="e.g., Speak in a warm, friendly tone with moderate pacing. Add slight emotional emphasis."
+          ></textarea>
+          <span class="form-hint">Control accent, emotion, intonation, speed, and tone</span>
         </div>
 
         <!-- Translate button -->

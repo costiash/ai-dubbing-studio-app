@@ -32,6 +32,17 @@ describe('App Workflow Integration Tests', () => {
       <!-- Upload Section -->
       <section id="upload-section"></section>
 
+      <!-- File Preview -->
+      <div id="file-preview" class="hidden">
+        <span id="file-preview-name"></span>
+      </div>
+      <button id="transcribe-btn" class="hidden"></button>
+      <select id="audio-language">
+        <option value="">Auto-detect</option>
+        <option value="en">English</option>
+        <option value="he">Hebrew</option>
+      </select>
+
       <!-- Transcribe Section -->
       <section id="transcribe-section" class="hidden">
         <textarea id="transcript-editor"></textarea>
@@ -70,8 +81,9 @@ describe('App Workflow Integration Tests', () => {
       <div id="waveform-container" style="display: none;"></div>
     `;
 
-    // Mock URL.createObjectURL
+    // Mock URL APIs
     global.URL.createObjectURL = vi.fn(() => 'blob:mock-url');
+    global.URL.revokeObjectURL = vi.fn();
 
     // Create shared state
     mockState = {
@@ -82,6 +94,7 @@ describe('App Workflow Integration Tests', () => {
       targetLanguage: null,
       voice: 'alloy',
       model: 'tts-1',
+      instructions: '',
       originalFile: null,
       originalAudioUrl: null,
       generatedAudioBlob: null,
@@ -149,22 +162,38 @@ describe('App Workflow Integration Tests', () => {
     );
   });
 
-  describe('Upload → Transcribe Flow', () => {
-    it('should complete upload and show transcription section', async () => {
+  describe('Upload → Transcribe Flow (Two-Step)', () => {
+    it('should store file on handleFileUpload (step 1)', async () => {
+      const mockFile = new File(['audio'], 'test.mp3', { type: 'audio/mp3' });
+
+      await fileUploadManager.handleFileUpload(mockFile);
+
+      // File should be stored but NOT transcribed yet
+      expect(mockState.originalFile).toBe(mockFile);
+      expect(mockState.originalAudioUrl).toBe('blob:mock-url');
+      expect(mockApiClient.transcribeAudio).not.toHaveBeenCalled();
+
+      // File preview should be visible
+      expect(document.getElementById('file-preview').classList.contains('hidden')).toBe(false);
+      expect(document.getElementById('transcribe-btn').classList.contains('hidden')).toBe(false);
+    });
+
+    it('should complete transcription on startTranscription (step 2)', async () => {
       const mockFile = new File(['audio'], 'test.mp3', { type: 'audio/mp3' });
       mockApiClient.transcribeAudio.mockResolvedValue({
         text: 'שלום עולם',
-        language: 'he'
+        language: 'Hebrew'
       });
 
-      // Upload file
+      // Step 1: Upload file
       await fileUploadManager.handleFileUpload(mockFile);
+
+      // Step 2: Start transcription
+      await fileUploadManager.startTranscription();
 
       // Verify state
       expect(mockState.transcription).toBe('שלום עולם');
-      expect(mockState.sourceLanguage).toBe('he');
-      expect(mockState.originalFile).toBe(mockFile);
-      expect(mockState.originalAudioUrl).toMatch(/^blob:/);
+      expect(mockState.sourceLanguage).toBe('hebrew');
 
       // Verify UI state
       expect(mockState.currentStep).toBe('transcribe');
@@ -176,17 +205,21 @@ describe('App Workflow Integration Tests', () => {
       expect(editor.value).toBe('שלום עולם');
 
       // Verify UI locking
-      expect(uiLock.lockUI).toHaveBeenCalledWith('uploading and transcribing');
+      expect(uiLock.lockUI).toHaveBeenCalledWith('transcribing audio');
       expect(uiLock.unlockUI).toHaveBeenCalled();
     });
 
-    it('should handle upload errors gracefully', async () => {
+    it('should handle transcription errors gracefully', async () => {
       const mockFile = new File(['audio'], 'test.mp3', { type: 'audio/mp3' });
       mockApiClient.transcribeAudio.mockRejectedValue(new Error('API Error'));
 
       const showErrorSpy = vi.spyOn(uiFeedbackManager, 'showError');
 
+      // Step 1: Upload file
       await fileUploadManager.handleFileUpload(mockFile);
+
+      // Step 2: Start transcription (fails)
+      await fileUploadManager.startTranscription();
 
       // Should show error
       expect(showErrorSpy).toHaveBeenCalledWith('Transcription failed: API Error');
@@ -198,19 +231,22 @@ describe('App Workflow Integration Tests', () => {
       expect(mockState.currentStep).toBe('upload');
     });
 
-    it('should prevent duplicate uploads', async () => {
+    it('should prevent duplicate transcriptions', async () => {
       const mockFile = new File(['audio'], 'test.mp3', { type: 'audio/mp3' });
       mockApiClient.transcribeAudio.mockImplementation(() =>
         new Promise(resolve => setTimeout(() => resolve({ text: 'test', language: 'en' }), 100))
       );
 
-      // Start first upload (don't await)
-      const firstUpload = fileUploadManager.handleFileUpload(mockFile);
+      // Step 1: Upload file
+      await fileUploadManager.handleFileUpload(mockFile);
 
-      // Try second upload immediately
-      const secondUpload = fileUploadManager.handleFileUpload(mockFile);
+      // Start first transcription (don't await)
+      const firstTranscription = fileUploadManager.startTranscription();
 
-      await Promise.all([firstUpload, secondUpload]);
+      // Try second transcription immediately
+      const secondTranscription = fileUploadManager.startTranscription();
+
+      await Promise.all([firstTranscription, secondTranscription]);
 
       // API should only be called once
       expect(mockApiClient.transcribeAudio).toHaveBeenCalledTimes(1);
@@ -253,7 +289,8 @@ describe('App Workflow Integration Tests', () => {
       expect(mockApiClient.generateTTS).toHaveBeenCalledWith(
         'שלום עולם',
         'alloy',
-        'tts-1'
+        'tts-1',
+        null // instructions (empty string becomes null)
       );
       expect(mockState.generatedAudioBlob).toBeTruthy();
       expect(mockState.generatedAudioUrl).toMatch(/^blob:/);
@@ -316,19 +353,24 @@ describe('App Workflow Integration Tests', () => {
 
   describe('Full End-to-End Flow', () => {
     it('should complete entire workflow: Upload → Transcribe → Translate → TTS', async () => {
-      // Step 1: Upload and transcribe
+      // Step 1: Upload file
       const mockFile = new File(['audio'], 'test.mp3', { type: 'audio/mp3' });
-      mockApiClient.transcribeAudio.mockResolvedValue({
-        text: 'Hello world',
-        language: 'en'
-      });
 
       await fileUploadManager.handleFileUpload(mockFile);
+      expect(mockState.originalFile).toBe(mockFile);
+
+      // Step 2: Transcribe
+      mockApiClient.transcribeAudio.mockResolvedValue({
+        text: 'Hello world',
+        language: 'English'
+      });
+
+      await fileUploadManager.startTranscription();
 
       expect(mockState.currentStep).toBe('transcribe');
       expect(mockState.transcription).toBe('Hello world');
 
-      // Step 2: Translate and generate TTS
+      // Step 3: Translate and generate TTS
       mockState.targetLanguage = 'hebrew';
       mockApiClient.translateText.mockResolvedValue({
         translated_text: 'שלום עולם'
@@ -414,27 +456,30 @@ describe('App Workflow Integration Tests', () => {
     });
 
     it('should reset manager flags', () => {
-      fileUploadManager.isUploading = true;
+      fileUploadManager.isTranscribing = true;
       audioProcessingManager.isProcessing = true;
 
       fileUploadManager.reset();
       audioProcessingManager.reset();
 
-      expect(fileUploadManager.isUploading).toBe(false);
+      expect(fileUploadManager.isTranscribing).toBe(false);
       expect(audioProcessingManager.isProcessing).toBe(false);
     });
   });
 
   describe('Error Recovery', () => {
-    it('should recover from upload error and allow retry', async () => {
+    it('should recover from transcription error and allow retry', async () => {
       const mockFile = new File(['audio'], 'test.mp3', { type: 'audio/mp3' });
 
-      // First attempt fails
-      mockApiClient.transcribeAudio.mockRejectedValueOnce(new Error('Network error'));
-
+      // Upload file first
       await fileUploadManager.handleFileUpload(mockFile);
 
-      expect(fileUploadManager.isUploading).toBe(false);
+      // First transcription attempt fails
+      mockApiClient.transcribeAudio.mockRejectedValueOnce(new Error('Network error'));
+
+      await fileUploadManager.startTranscription();
+
+      expect(fileUploadManager.isTranscribing).toBe(false);
       expect(uiLock.unlockUI).toHaveBeenCalled();
 
       // Clear mocks
@@ -443,10 +488,10 @@ describe('App Workflow Integration Tests', () => {
       // Second attempt succeeds
       mockApiClient.transcribeAudio.mockResolvedValue({
         text: 'Success',
-        language: 'en'
+        language: 'English'
       });
 
-      await fileUploadManager.handleFileUpload(mockFile);
+      await fileUploadManager.startTranscription();
 
       expect(mockState.transcription).toBe('Success');
       expect(mockState.currentStep).toBe('transcribe');

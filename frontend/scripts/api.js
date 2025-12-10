@@ -32,11 +32,18 @@ export class APIClient {
   /**
    * Upload and transcribe audio file
    * @param {File} file - Audio file to transcribe
+   * @param {string|null} language - Optional language code (e.g., 'en', 'he', 'ru')
+   *                                  If null/empty, backend will auto-detect
    * @returns {Promise<{text: string, language: string}>}
    */
-  async transcribeAudio(file) {
+  async transcribeAudio(file, language = null) {
     const formData = new FormData();
     formData.append('file', file);
+
+    // Add language parameter if provided
+    if (language) {
+      formData.append('language', language);
+    }
 
     const response = await fetch(`${this.baseURL}/api/v1/audio/transcribe`, {
       method: 'POST',
@@ -87,20 +94,28 @@ export class APIClient {
    * Generate speech from text (Text-to-Speech)
    * @param {string} text - Text to convert to speech
    * @param {string} voice - Voice name (default: "onyx")
-   * @param {string} model - TTS model (default: "tts-1")
+   * @param {string} model - TTS model (default: "gpt-4o-mini-tts")
+   * @param {string|null} instructions - Voice style instructions (only for gpt-4o-mini-tts)
    * @returns {Promise<Blob>} - MP3 audio blob
    */
-  async generateTTS(text, voice = 'onyx', model = 'tts-1') {
+  async generateTTS(text, voice = 'onyx', model = 'gpt-4o-mini-tts', instructions = null) {
+    const payload = {
+      text,
+      voice,
+      model,
+    };
+
+    // Only include instructions if provided and using gpt-4o-mini-tts
+    if (instructions && model === 'gpt-4o-mini-tts') {
+      payload.instructions = instructions;
+    }
+
     const response = await fetch(`${this.baseURL}/api/v1/audio/tts`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        text,
-        voice,
-        model,
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {

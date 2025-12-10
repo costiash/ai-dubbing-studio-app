@@ -84,7 +84,8 @@ export class AudioProcessingManager {
       const audioBlob = await this.apiClient.generateTTS(
         this.state.translation,
         this.state.voice,
-        this.state.model
+        this.state.model,
+        this.state.instructions || null
       );
 
       this.state.generatedAudioBlob = audioBlob;

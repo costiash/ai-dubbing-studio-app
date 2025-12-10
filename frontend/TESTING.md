@@ -30,7 +30,7 @@ Coverage is measured on the refactored modules:
 ### Install Dependencies
 
 ```bash
-cd /home/rudycosta3/ai-dubbing-studio-app/frontend
+cd frontend
 npm install
 ```
 

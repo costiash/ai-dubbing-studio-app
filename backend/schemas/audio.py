@@ -59,7 +59,11 @@ class TranslateResponse(BaseModel):
 
 
 class TTSRequest(BaseModel):
-    """Request schema for text-to-speech generation."""
+    """Request schema for text-to-speech generation.
+
+    The gpt-4o-mini-tts model supports an 'instructions' parameter for controlling
+    voice characteristics like accent, emotional range, intonation, speed, and tone.
+    """
 
     text: str = Field(
         ...,
@@ -69,11 +73,26 @@ class TTSRequest(BaseModel):
     )
     voice: str = Field(
         default="onyx",
-        description="Voice to use (alloy, echo, fable, onyx, nova, shimmer)",
+        description=(
+            "Voice to use. Available voices for gpt-4o-mini-tts: "
+            "alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, shimmer"
+        ),
     )
     model: str = Field(
-        default="tts-1",
-        description="TTS model to use (tts-1 or tts-1-hd)",
+        default="gpt-4o-mini-tts",
+        description=(
+            "TTS model: gpt-4o-mini-tts (supports instructions), "
+            "tts-1 (fast), or tts-1-hd (high quality)"
+        ),
+    )
+    instructions: str | None = Field(
+        default=None,
+        description=(
+            "Voice style instructions for gpt-4o-mini-tts. "
+            "Example: 'Speak in a warm, friendly tone with moderate pacing.' "
+            "Can control accent, emotional range, intonation, speed, tone, whispering."
+        ),
+        max_length=1000,
     )
 
     class Config:
@@ -81,7 +100,8 @@ class TTSRequest(BaseModel):
             "example": {
                 "text": "Hello, this is a test of text-to-speech.",
                 "voice": "onyx",
-                "model": "tts-1",
+                "model": "gpt-4o-mini-tts",
+                "instructions": "Speak in a clear, professional tone with moderate pacing.",
             }
         }
 

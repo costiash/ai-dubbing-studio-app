@@ -217,6 +217,73 @@
 }
 
 /* ========================================================================
+   FILE PREVIEW
+   Shows uploaded file before transcription starts
+   ======================================================================== */
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn var(--duration-normal) var(--ease-out);
+}
+
+.file-preview__info {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+}
+
+.file-preview__icon {
+  font-size: var(--font-size-lg);
+}
+
+.file-preview__name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-preview__remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+
+.file-preview__remove:hover {
+  background-color: var(--color-error);
+  color: white;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================================================
    TRANSCRIPT EDITOR (Karaoke-style highlighting)
    Interactive text with synchronized highlighting
    ======================================================================== */
@@ -642,6 +709,49 @@
 
 .form-helper--error {
   color: var(--color-error);
+}
+
+/* Textarea */
+.form-textarea {
+  min-height: 80px;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-family-base);
+  font-size: var(--font-size-base);
+  color: var(--color-text-primary);
+  background-color: var(--color-surface-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  transition: all var(--duration-fast);
+  resize: vertical;
+  width: 100%;
+}
+
+.form-textarea:hover {
+  border-color: var(--color-border-secondary);
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--color-interactive);
+  box-shadow: var(--shadow-focus);
+}
+
+.form-textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Form hint text */
+.form-hint {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  margin-top: var(--space-1);
+}
+
+/* Label hint (optional indicator) */
+.form-label__hint {
+  font-weight: var(--font-weight-normal);
+  color: var(--color-text-tertiary);
+  font-size: var(--font-size-xs);
 }
 
 /* ========================================================================

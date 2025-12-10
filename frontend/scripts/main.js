@@ -36,7 +36,8 @@ const state = {
   sourceLanguage: 'hebrew',
   targetLanguage: 'russian',
   voice: 'onyx',
-  model: 'tts-1',
+  model: 'gpt-4o-mini-tts',
+  instructions: '', // Voice style instructions for gpt-4o-mini-tts
   // Audio player instances
   originalPlayer: null,
   originalPlayerResult: null,
@@ -148,6 +149,14 @@ class DubbingStudioApp {
    * Set up event listeners
    */
   setupEventListeners() {
+    // Transcribe button (starts transcription after file upload)
+    const transcribeBtn = document.getElementById('transcribe-btn');
+    transcribeBtn?.addEventListener('click', () => this.fileUploadManager.startTranscription());
+
+    // File remove button (removes uploaded file)
+    const fileRemoveBtn = document.getElementById('file-preview-remove');
+    fileRemoveBtn?.addEventListener('click', () => this.fileUploadManager.removeFile());
+
     // Translate button
     const translateBtn = document.getElementById('translate-btn');
     translateBtn?.addEventListener('click', () => this.audioProcessingManager.handleTranslate(this.audioReactiveUI));
@@ -192,7 +201,36 @@ class DubbingStudioApp {
     const modelSelect = document.getElementById('model-select');
     modelSelect?.addEventListener('change', (e) => {
       state.model = e.target.value;
+      this.toggleInstructionsVisibility(e.target.value);
     });
+
+    // Voice instructions
+    const instructionsTextarea = document.getElementById('voice-instructions');
+    instructionsTextarea?.addEventListener('input', (e) => {
+      state.instructions = e.target.value;
+    });
+
+    // Initialize instructions visibility based on default model
+    this.toggleInstructionsVisibility(state.model);
+  }
+
+  /**
+   * Toggle visibility of voice instructions field based on selected model
+   * @param {string} model - Selected TTS model
+   */
+  toggleInstructionsVisibility(model) {
+    const instructionsGroup = document.getElementById('instructions-group');
+    if (instructionsGroup) {
+      if (model === 'gpt-4o-mini-tts') {
+        instructionsGroup.classList.remove('hidden');
+      } else {
+        instructionsGroup.classList.add('hidden');
+        // Clear instructions when switching to non-supporting model
+        state.instructions = '';
+        const textarea = document.getElementById('voice-instructions');
+        if (textarea) textarea.value = '';
+      }
+    }
   }
 
   /**

@@ -417,7 +417,7 @@ All errors follow this structure:
 ## CORS Configuration
 
 **Allowed Origins (Development):**
-- `http://localhost:3000` (Frontend)
+- `http://localhost:8080` (Frontend)
 - `http://localhost:8501` (Streamlit)
 
 **Allowed Methods:** All (`*`)
@@ -456,7 +456,7 @@ TTS_MODEL_DEFAULT=tts-1
 TTS_VOICE_DEFAULT=onyx
 
 # CORS Configuration (Optional)
-CORS_ORIGINS=["http://localhost:3000", "http://localhost:8501"]
+CORS_ORIGINS=["http://localhost:8080", "http://localhost:8000"]
 CORS_ALLOW_CREDENTIALS=true
 ```
 
@@ -581,7 +581,7 @@ curl -X POST http://localhost:8000/api/v1/audio/tts \
 ### For React/Next.js Frontend (Phase 3)
 - Use `fetch` or `axios`
 - File upload: Use `FormData` for multipart
-- CORS already configured for `localhost:3000`
+- CORS already configured for `localhost:8080`
 - Binary response: Create blob URL for audio playback
 
 ### Example JavaScript Integration
@@ -632,4 +632,4 @@ const audioUrl = URL.createObjectURL(audioBlob);
 For issues or questions, see:
 - API Documentation: `http://localhost:8000/docs`
 - OpenAPI Spec: `http://localhost:8000/openapi.json`
-- Repository: `/home/rudycosta3/ai-dubbing-studio-app`
+- Repository: Project root directory

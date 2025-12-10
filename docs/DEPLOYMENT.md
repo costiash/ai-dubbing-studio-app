@@ -7,7 +7,7 @@ This guide explains how to run the complete AI Dubbing Studio application (Backe
 ```
 ┌─────────────────────────────────────────────────────────┐
 │                    USER BROWSER                         │
-│              http://localhost:3000                      │
+│              http://localhost:8080                      │
 │                                                         │
 │  ┌───────────────────────────────────────────────┐    │
 │  │  FRONTEND (Vanilla JavaScript)                 │    │
@@ -89,7 +89,7 @@ This guide explains how to run the complete AI Dubbing Studio application (Backe
 ### Step 1: Clone/Navigate to Project
 
 ```bash
-cd /home/rudycosta3/ai-dubbing-studio-app
+cd ai-dubbing-studio-app
 ```
 
 ### Step 2: Set Up Environment Variables
@@ -131,7 +131,7 @@ uv run pip list | grep openai
 
 **Terminal 1 - Backend**
 ```bash
-cd /home/rudycosta3/ai-dubbing-studio-app
+cd ai-dubbing-studio-app
 
 # Start FastAPI backend with auto-reload
 uv run uvicorn backend.api.main:app --reload --port 8000
@@ -139,28 +139,28 @@ uv run uvicorn backend.api.main:app --reload --port 8000
 
 **Terminal 2 - Frontend**
 ```bash
-cd /home/rudycosta3/ai-dubbing-studio-app/frontend
+cd ai-dubbing-studio-app/frontend
 
 # Start frontend server
 python server.py
 ```
 
 Then open your browser to:
-- **Frontend**: http://localhost:3000
+- **Frontend**: http://localhost:8080
 - **Backend API Docs**: http://localhost:8000/docs
 
 ### Option 2: Background Processes
 
 **Start Backend in Background**
 ```bash
-cd /home/rudycosta3/ai-dubbing-studio-app
+cd ai-dubbing-studio-app
 nohup uv run uvicorn backend.api.main:app --port 8000 > backend.log 2>&1 &
 echo $! > backend.pid
 ```
 
 **Start Frontend in Background**
 ```bash
-cd /home/rudycosta3/ai-dubbing-studio-app/frontend
+cd ai-dubbing-studio-app/frontend
 nohup python server.py > frontend.log 2>&1 &
 echo $! > frontend.pid
 ```
@@ -181,7 +181,7 @@ kill $(cat frontend.pid)
 screen -S dubbing-studio
 
 # Window 1: Backend (Ctrl+A C to create new window)
-cd /home/rudycosta3/ai-dubbing-studio-app
+cd ai-dubbing-studio-app
 uv run uvicorn backend.api.main:app --reload --port 8000
 
 # Window 2: Frontend (Ctrl+A C)
@@ -212,7 +212,7 @@ Expected response:
 ### 2. Check Frontend is Serving
 
 ```bash
-curl -I http://localhost:3000
+curl -I http://localhost:8080
 ```
 
 Expected response:
@@ -224,7 +224,7 @@ Content-Type: text/html
 
 ### 3. Test Complete Workflow
 
-1. Open http://localhost:3000 in your browser
+1. Open http://localhost:8080 in your browser
 2. Upload a short audio file (MP3, WAV, OGG, or M4A)
 3. Wait for transcription to complete
 4. Review and edit the transcript if needed
@@ -487,7 +487,7 @@ docker logs -f container-name
 curl http://localhost:8000/health
 
 # Frontend availability
-curl -I http://localhost:3000
+curl -I http://localhost:8080
 
 # Full workflow test (using httpie)
 http POST http://localhost:8000/api/v1/audio/transcribe file@test.mp3
@@ -586,16 +586,16 @@ window.dubbingStudio.state  // View current state
 ### Start Development Environment
 ```bash
 # Terminal 1
-cd /home/rudycosta3/ai-dubbing-studio-app
+cd ai-dubbing-studio-app
 uv run uvicorn backend.api.main:app --reload --port 8000
 
 # Terminal 2
-cd /home/rudycosta3/ai-dubbing-studio-app/frontend
+cd ai-dubbing-studio-app/frontend
 python server.py
 ```
 
 ### Access Points
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:8080
 - Backend API: http://localhost:8000
 - API Docs: http://localhost:8000/docs
 - OpenAPI Spec: http://localhost:8000/openapi.json

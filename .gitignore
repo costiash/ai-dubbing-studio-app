@@ -87,6 +87,7 @@ htmlcov/
 .coverage
 .coverage.*
 coverage.xml
+coverage.json
 *.cover
 
 # pytest
@@ -100,3 +101,6 @@ test-results/
 
 # MCP configuration (contains local paths/secrets)
 .mcp.json
+
+# User test data (may contain personal audio files)
+testing_data/

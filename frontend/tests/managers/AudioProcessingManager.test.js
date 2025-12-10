@@ -55,6 +55,7 @@ describe('AudioProcessingManager', () => {
       targetLanguage: 'english',
       voice: 'alloy',
       model: 'tts-1',
+      instructions: '',
       generatedAudioBlob: null,
       generatedAudioUrl: null
     };
@@ -183,7 +184,8 @@ describe('AudioProcessingManager', () => {
       expect(mockApiClient.generateTTS).toHaveBeenCalledWith(
         'Translated text',
         'alloy',
-        'tts-1'
+        'tts-1',
+        null // instructions (empty string becomes null)
       );
     });
 

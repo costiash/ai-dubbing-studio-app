@@ -21,6 +21,7 @@ export class UploadManager {
       'audio/mpeg',
       'audio/wav',
       'audio/ogg',
+      'application/ogg',  // Firefox reports OGG as application/ogg
       'audio/x-m4a',
       'audio/mp4'
     ];

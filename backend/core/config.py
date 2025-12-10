@@ -50,24 +50,33 @@ class Settings(BaseSettings):
     # OpenAI Model Configuration
     transcription_model: str = Field(
         default="gpt-4o-transcribe",
-        description="OpenAI model for audio transcription",
+        description="OpenAI model for audio transcription (gpt-4o-transcribe, gpt-4o-mini-transcribe, whisper-1)",
     )
     translation_model: str = Field(
         default="gpt-5.1",
         description="OpenAI model for text translation",
     )
+    translation_temperature: float = Field(
+        default=0.3,
+        description="Temperature for translation (lower = more consistent)",
+    )
     tts_model_default: str = Field(
-        default="tts-1",
-        description="Default OpenAI TTS model",
+        default="gpt-4o-mini-tts",
+        description="Default OpenAI TTS model (gpt-4o-mini-tts for instructions support, tts-1, tts-1-hd)",
     )
     tts_voice_default: str = Field(
         default="onyx",
         description="Default TTS voice",
     )
+    # Available TTS voices: alloy, ash, ballad, coral, echo, fable, nova, onyx, sage, shimmer
+    tts_available_voices: list[str] = Field(
+        default=["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer"],
+        description="Available TTS voices for gpt-4o-mini-tts",
+    )
 
     # CORS Configuration
     cors_origins: list[str] = Field(
-        default=["http://localhost:3000", "http://localhost:8501"],
+        default=["http://localhost:3000", "http://localhost:8080", "http://localhost:8501"],
         description="Allowed CORS origins",
     )
     cors_allow_credentials: bool = Field(

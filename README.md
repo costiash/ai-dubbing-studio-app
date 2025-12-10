@@ -1,113 +1,155 @@
 # AI Dubbing Studio
 
-A web-based application that automates dubbing audio content from one language to another using OpenAI's AI models for transcription, translation, and text-to-speech generation.
+A web application that automates audio dubbing between languages using OpenAI's AI models for transcription, translation, and text-to-speech.
 
-## Features
+## Quick Start
 
-- **Audio Upload** - Support for OGG, MP3, WAV, and M4A formats
-- **Automatic Transcription** - Converts audio to text using OpenAI's GPT-4O transcription model
-- **Manual Editing** - Review and correct transcription errors before translation
-- **Language Translation** - Translates text between any language pair using GPT-5.1
-- **Text-to-Speech** - Generates natural-sounding audio using OpenAI TTS
-- **Voice Selection** - 6 voices available: alloy, echo, fable, onyx, nova, shimmer
-- **Quality Options** - Choose between `tts-1` (faster) or `tts-1-hd` (higher quality)
-- **Audio Download** - Export the final dubbed audio as MP3
+### Prerequisites
 
-## Workflow
-
-1. **Upload & Transcribe** - Upload audio file, automatically transcribed to text
-2. **Edit & Translate** - Review/edit transcription, then translate and generate speech
-3. **Download** - Listen to result and download the dubbed MP3
-
-## Prerequisites
-
-- Python 3.13+
-- FFmpeg (system dependency)
-- OpenAI API key
-
-### Installing FFmpeg
+- **Python 3.13+**
+- **Node.js 18+** (for frontend dev server)
+- **FFmpeg** (audio processing)
+- **OpenAI API key**
 
 ```bash
-# Ubuntu/Debian
-sudo apt-get install ffmpeg
-
-# macOS
-brew install ffmpeg
-
-# Windows - download from https://ffmpeg.org/download.html
+# Install FFmpeg
+sudo apt install ffmpeg      # Ubuntu/Debian
+brew install ffmpeg          # macOS
 ```
 
-## Installation
+### Setup
 
 ```bash
-# Clone the repository
+# Clone and enter directory
 git clone <repository-url>
 cd ai-dubbing-studio-app
 
-# Install dependencies with uv
+# Install Python dependencies
 uv sync
 
-# Or with pip
-pip install -e .
+# Create environment file
+echo "OPENAI_API_KEY=sk-your-key-here" > .env
+
+# Start both servers
+./start.sh
 ```
 
-## Usage
+Open **http://localhost:8080** in your browser.
+
+### Manual Start (Alternative)
 
 ```bash
-# Run the application
-uv run streamlit run app.py
+# Terminal 1: Backend (FastAPI)
+uv run uvicorn backend.api.main:app --host 0.0.0.0 --port 8000 --reload
+
+# Terminal 2: Frontend (Python HTTP server)
+cd frontend && python server.py
 ```
 
-The application opens at `http://localhost:8501`. Enter your OpenAI API key in the sidebar to get started.
+## Features
 
-## Dependencies
+| Feature | Description |
+|---------|-------------|
+| **Audio Upload** | Drag-and-drop support for OGG, MP3, WAV, M4A (max 25MB) |
+| **Transcription** | Automatic speech-to-text using GPT-4O |
+| **Translation** | Any language pair via GPT-5.1 |
+| **Text-to-Speech** | 6 voices, standard or HD quality |
+| **Session Persistence** | Resume work after page refresh |
+| **Dark/Light Mode** | System-aware theme switching |
 
-| Package | Purpose |
-|---------|---------|
-| streamlit | Web UI framework |
-| openai | OpenAI API client |
-| pydub | Audio format conversion |
-| audioop-lts | Audio operations (Python 3.13 compatibility) |
+## How It Works
 
-## Documentation
+```
+┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+│  1. Upload   │ → │ 2. Edit &    │ → │ 3. Download  │
+│  & Transcribe│    │    Translate │    │    Audio     │
+└──────────────┘    └──────────────┘    └──────────────┘
+```
 
-Comprehensive documentation is available in the [`docs/`](docs/) directory:
+1. **Upload** an audio file → automatically transcribed to text
+2. **Review** the transcription, select target language, generate dubbed audio
+3. **Download** the final MP3
 
-- **[Quick Start](docs/development/QUICK_START.md)** - Get started in 5 minutes
-- **[API Documentation](docs/api/API_CONTRACT.md)** - Backend API reference
-- **[Architecture](docs/architecture/ARCHITECTURE_DIAGRAM.md)** - System design and data flow
-- **[Testing Guide](docs/development/TESTING_GUIDE.md)** - Running and writing tests
-- **[Deployment](docs/deployment/DEPLOYMENT_GUIDE.md)** - Production deployment instructions
-- **[Claude Instructions](docs/development/CLAUDE_INSTRUCTIONS.md)** - Working with Claude Code
+## Architecture
 
-See [`docs/README.md`](docs/README.md) for the complete documentation index.
+```
+Frontend (localhost:8080)          Backend (localhost:8000)
+┌────────────────────┐             ┌────────────────────┐
+│  Vanilla JavaScript │ ─── REST ─→│  FastAPI + Python  │
+│  ES6 Modules        │             │  Pydantic schemas  │
+│  Manager Pattern    │             │  Async/await       │
+└────────────────────┘             └─────────┬──────────┘
+                                             │
+                                    ┌────────▼────────┐
+                                    │   OpenAI API    │
+                                    │  GPT-4O, GPT-5.1│
+                                    │  TTS-1/TTS-1-HD │
+                                    └─────────────────┘
+```
+
+## Development
+
+### Backend Commands
+
+```bash
+uv run pytest backend/tests/              # Run tests
+uv run pytest backend/tests/ --cov        # With coverage
+uv run ruff check backend/ --fix          # Lint & fix
+uv run ruff format backend/               # Format
+uv run mypy backend/                      # Type check
+```
+
+### Frontend Commands
+
+```bash
+cd frontend
+npm test                                  # Run Vitest tests
+npm run test:coverage                     # With coverage
+```
+
+### API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Health check |
+| `POST` | `/api/v1/audio/transcribe` | Upload audio → text |
+| `POST` | `/api/v1/audio/translate` | Text → translated text |
+| `POST` | `/api/v1/audio/tts` | Text → speech (MP3) |
 
 ## Project Structure
 
 ```
 ai-dubbing-studio-app/
-├── backend/              # FastAPI backend server
-│   ├── api/             # API routes and endpoints
-│   ├── core/            # Core configuration
-│   ├── schemas/         # Pydantic schemas
-│   ├── services/        # Business logic services
-│   ├── utils/           # Utility functions
-│   └── tests/           # Test suite (114 tests, 76% coverage)
-├── frontend/            # JavaScript frontend application
-│   ├── components/      # UI components
-│   ├── modules/         # JavaScript modules
-│   └── tests/           # Frontend tests
-├── docs/                # Documentation
-│   ├── api/            # API documentation
-│   ├── architecture/   # Architecture diagrams
-│   ├── development/    # Developer guides
-│   ├── deployment/     # Deployment guides
-│   └── reference/      # External references
-├── design/              # Design assets
-├── scripts/             # Utility scripts
-├── .github/             # GitHub Actions workflows
-└── mcp_servers/         # MCP server implementations
+├── backend/                 # FastAPI server
+│   ├── api/routes/         # API endpoints
+│   ├── services/           # OpenAI client, audio converter
+│   ├── schemas/            # Pydantic models
+│   └── tests/              # pytest suite (114 tests)
+├── frontend/               # JavaScript SPA
+│   ├── scripts/managers/   # UI state, file upload, audio processing
+│   ├── scripts/services/   # Health check service
+│   └── tests/              # Vitest suite
+├── docs/                   # Documentation
+├── design/                 # Design system & tokens
+└── start.sh               # Development startup script
 ```
+
+## Documentation
+
+| Document | Description |
+|----------|-------------|
+| [API Reference](docs/API.md) | REST API endpoints, schemas, error codes |
+| [Architecture](docs/ARCHITECTURE.md) | System design and data flow |
+| [Testing Guide](docs/TESTING.md) | Backend testing with pytest |
+| [Deployment](docs/DEPLOYMENT.md) | Production deployment |
+| [AI Docs](ai_docs/) | OpenAI API reference |
+
+## Tech Stack
+
+- **Backend:** FastAPI, Pydantic, uvicorn, pydub
+- **Frontend:** Vanilla JavaScript (ES6), HTML5, CSS3
+- **AI:** OpenAI API (GPT-4O, GPT-5.1, TTS)
+- **Tools:** uv (packages), pytest, Vitest, Ruff, mypy
 
 ## License
 
