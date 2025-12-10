@@ -29,27 +29,20 @@ logger = get_logger(__name__)
 # - Lower temperature (0.3) for consistent translations
 # - Clear role definition and task constraints
 
-TRANSLATION_SYSTEM_PROMPT = """System: # Role and Objective
-You are an expert translator skilled in providing natural, fluent translations that retain the original meaning, tone, and cultural context.
+TRANSLATION_SYSTEM_PROMPT = """You are an expert translator. Translate the user's text from {source_language} to {target_language}.
 
-# Instructions
-Begin with a concise checklist (3-7 bullets) of your translation approach; keep items conceptual, not implementation-level.
-Translate the user's text from {source_language} to {target_language}.
+Requirements:
+- Produce ONLY the translated text with no additional commentary, explanation, or meta-text
+- Ensure the translation sounds natural and native to speakers of {target_language}
+- Preserve the original tone (formal/informal, emotional/neutral)
+- Adapt idioms and cultural references appropriately while maintaining meaning
+- Keep technical terms, proper nouns, and brand names unchanged as appropriate
 
-## Output Requirements
-- Ensure the translation sounds native to speakers of {target_language}.
-- Preserve the original tone (formal/informal, emotional/neutral).
-- Adapt idioms and cultural references to {target_language} context while maintaining meaning.
-- Maintain the level of formality from the source text.
-- Keep technical terms, proper nouns, and brand names unchanged as appropriate.
-
-## Constraints
-- Provide ONLY the translated text without any commentary or explanation.
-- Do not add, remove, or alter information from the original text.
-- Avoid introductory phrases such as "Here is the translation:" or similar.
-- Retain any untranslatable components (names, technical terms) exactly as in the original.
-
-After providing your translation, validate in 1-2 lines whether the output is native-sounding and preserves meaning and tone; self-correct if needed."""
+Critical: Output ONLY the translation itself. Do not include:
+- Checklists or bullet points about your approach
+- Introductory phrases like "Here is the translation:"
+- Validation or self-assessment of your translation
+- Any text that is not part of the direct translation"""
 
 
 # =============================================================================
@@ -72,66 +65,35 @@ TTS_INSTRUCTIONS_BY_CONTEXT = {
 
 
 # =============================================================================
-# Transcription Prompt Optimization
+# Transcription Refinement Prompt
 # =============================================================================
-# System prompt for generating optimized transcription prompts
+# GPT-5.1 prompt for linguistic and contextual refinement of transcriptions.
+# This is a lightweight post-processing step that improves accuracy without
+# requiring re-transcription of the audio.
 
-PROMPT_OPTIMIZATION_SYSTEM = """System: # Role and Objective
-You are a linguist and speech recognition specialist with advanced expertise in the target language {language}.
+TRANSCRIPTION_REFINEMENT_PROMPT = """You are a professional transcription editor and linguist specializing in {language}.
 
-# Instructions
-Create a concise, highly optimized transcription prompt (≤500 characters) tailored for OpenAI's gpt-4o-transcribe model. The prompt should maximize transcription accuracy for audio in the specified language.
+Your task is to refine a raw speech-to-text transcription for linguistic accuracy, grammar, and contextual correctness.
 
-## Process
-- Analyze the initial audio transcription to identify:
-  - Topic and domain
-  - Key vocabulary, proper nouns, technical terms
-  - Style and register (formal, casual, technical, etc.)
-  - Language- or domain-specific terms to preserve
+<input_transcription>
+{transcription}
+</input_transcription>
 
-# Output Requirements
-- The prompt must sequentially:
-  1. State the context, topic, and domain
-  2. List key vocabulary, names, technical/domain-specific terms
-  3. Specify expected style and register (e.g., formal/informal, include/exclude filler words)
-  4. Include guidance on any relevant language-specific transcription conventions for {language}
-- All elements must be drawn directly from the initial transcription analysis.
+Review and correct:
+1. **Phonetic misrecognitions**: Fix words that sound similar but are contextually wrong
+2. **Grammar and syntax**: Ensure proper sentence structure for {language}
+3. **Punctuation**: Add or correct punctuation for natural reading flow
+4. **Contextual coherence**: Ensure the text makes logical sense
+5. **Filler words**: Keep natural speech patterns but remove obvious recognition errors
 
-# Constraints
-- Output only the final optimized prompt—no explanations, reasoning, or extraneous text.
-- The prompt must be ≤500 characters and comprehensive.
-- Prioritize actionable information to assist the transcription model.
-- If the prompt exceeds 500 characters or lacks required elements, return an error JSON: { "error": "Prompt exceeds length or is missing required elements." }
+Guidelines:
+- Preserve the original meaning and speaker intent
+- Maintain the speaking style (formal/informal)
+- Do NOT translate - keep everything in the original {language}
+- Do NOT add content that wasn't spoken
+- Do NOT remove meaningful words
 
-## Output Format
-Respond with a JSON object in this format:
-
-{
-  "prompt": "[your optimized prompt here]"
-}
-
-- The "prompt" value must be a string, ≤500 characters, containing all elements in the specified order.
-- If constraints are violated, respond with:
-{
-  "error": "Prompt exceeds length or is missing required elements."
-}
-
-### Example
-
-Input:
-- language: "Spanish"
-- initial transcription: "Esta es una conferencia académica sobre biología molecular..."
-
-Output:
-{
-  "prompt": "Context: Academic conference on molecular biology. Prioritize terms: biología molecular, ADN, ARN, enzimas. Style: Formal, exclude filler words. Use standard Spanish transcription conventions."
-}
-
-## Output Verbosity
-- Respond with only the required JSON object.
-- Do not include any additional text or explanations.
-- Ensure the total output is at most 2-3 lines.
-- Prioritize complete, actionable answers within the length cap."""
+Output ONLY the refined transcription text. No explanations, no meta-commentary."""
 
 
 # Language code to name mapping for prompt generation
@@ -244,65 +206,68 @@ class OpenAIService:
             logger.error(error_msg)
             raise TranscriptionError(error_msg, details={"error": str(e)}) from e
 
-    async def generate_optimized_prompt(
+    async def refine_transcription(
         self,
+        transcription: str,
         language: str,
-        initial_transcription: str,
     ) -> str:
-        """Generate an optimized transcription prompt using GPT-5-mini.
+        """Refine a raw transcription using GPT-5.1 for linguistic accuracy.
 
-        This method analyzes an initial transcription to create a context-aware
-        prompt that will improve the accuracy of a refined transcription.
+        This lightweight post-processing step improves transcription quality by:
+        - Fixing phonetic misrecognitions (words that sound similar)
+        - Correcting grammar and syntax
+        - Adding proper punctuation
+        - Ensuring contextual coherence
 
         Args:
-            language: Language name (e.g., "English", "Hebrew") or code (e.g., "en", "he")
-            initial_transcription: The initial transcription text to analyze
+            transcription: Raw transcription text from speech-to-text model
+            language: Language name (e.g., "Hebrew", "English") or code (e.g., "he", "en")
 
         Returns:
-            Optimized prompt string for use with gpt-4o-transcribe
+            Refined transcription text
 
-        Raises:
-            TranscriptionError: If prompt generation fails
+        Note:
+            If refinement fails, returns the original transcription unchanged.
         """
         try:
             # Convert language code to name if needed
             language_name = LANGUAGE_CODE_TO_NAME.get(language.lower(), language.title())
 
-            logger.info(f"Generating optimized transcription prompt for {language_name}")
+            logger.info(f"Refining transcription ({len(transcription)} chars) for {language_name}")
 
-            system_prompt = PROMPT_OPTIMIZATION_SYSTEM.format(language=language_name)
-
-            # GPT-5-mini: use reasoning_effort and verbosity (NOT temperature/top_p)
-            response = await self.client.chat.completions.create(
-                model="gpt-5-mini",
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt,
-                    },
-                    {
-                        "role": "user",
-                        "content": f"Language: {language_name}\n\nInitial transcription:\n{initial_transcription}",
-                    },
-                ],
-                reasoning_effort="medium",  # Balance between speed and quality
-                verbosity="low",  # We want concise JSON output
-                max_completion_tokens=4096,
+            # Format the prompt with language and transcription
+            prompt = TRANSCRIPTION_REFINEMENT_PROMPT.format(
+                language=language_name,
+                transcription=transcription,
             )
 
-            optimized_prompt = response.choices[0].message.content
-            if not optimized_prompt:
-                logger.warning("Prompt optimization returned empty, using default")
-                return f"Audio content in {language_name}."
+            # GPT-5.1 with no reasoning (allows temperature control for consistency)
+            response = await self.client.chat.completions.create(
+                model=settings.translation_model,  # Uses gpt-5.1
+                messages=[
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
+                reasoning_effort="none",  # Required to use temperature parameter
+                temperature=0.2,  # Low temperature for consistent output
+            )
 
-            logger.info(f"Generated optimized prompt: {optimized_prompt[:100]}...")
-            return optimized_prompt.strip()
+            refined_text = response.choices[0].message.content
+            if not refined_text:
+                logger.warning("Refinement returned empty, using original transcription")
+                return transcription
+
+            logger.info(
+                f"Transcription refined: {len(transcription)} → {len(refined_text)} chars"
+            )
+            return refined_text.strip()
 
         except Exception as e:
-            logger.warning(f"Failed to generate optimized prompt: {e}, using default")
-            # Return a basic fallback prompt instead of failing
-            language_name = LANGUAGE_CODE_TO_NAME.get(language.lower(), language.title())
-            return f"Audio content in {language_name}."
+            # Non-fatal: return original transcription if refinement fails
+            logger.warning(f"Transcription refinement failed: {e}, using original")
+            return transcription
 
     async def translate_text(
         self,

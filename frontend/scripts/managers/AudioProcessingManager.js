@@ -32,6 +32,14 @@ export class AudioProcessingManager {
     const editor = document.getElementById('transcript-editor');
     const text = editor?.value || this.state.transcription;
 
+    // CRITICAL FIX: Save edited transcription to state so it displays correctly in results
+    // Previously, the edited text was only used for translation but never persisted to state,
+    // causing the results screen to show the original transcription instead of what the user edited
+    if (editor?.value) {
+      this.state.transcription = editor.value;
+      this.sessionManager.saveState('transcription', this.state.transcription);
+    }
+
     if (!text.trim()) {
       this.uiFeedbackManager.showError('No text to translate. Please enter or upload audio first.');
       return;

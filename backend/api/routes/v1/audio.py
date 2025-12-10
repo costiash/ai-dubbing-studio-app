@@ -1,8 +1,8 @@
 """Audio processing endpoints (v1).
 
-Implements dual-flow transcription based on language selection:
-- Flow 1 (Auto-detect): whisper-1 → GPT prompt optimization → gpt-4o-transcribe
-- Flow 2 (User-specified): gpt-4o-mini-transcribe → GPT prompt optimization → gpt-4o-transcribe
+Two-stage transcription pipeline:
+1. gpt-4o-transcribe for speech-to-text
+2. GPT-5.1 refinement for linguistic accuracy
 """
 
 from pathlib import Path
@@ -47,9 +47,8 @@ router = APIRouter(prefix="/audio", tags=["audio"])
     summary="Transcribe Audio",
     description="""Upload an audio file and receive transcribed text.
 
-Implements dual-flow transcription based on language parameter:
-- **Auto-detect (no language)**: Uses whisper-1 for detection, then optimizes with GPT and refines with gpt-4o-transcribe
-- **User-specified language**: Uses gpt-4o-mini-transcribe initially, then optimizes and refines with gpt-4o-transcribe
+Uses gpt-4o-transcribe for high-quality, consistent transcription results.
+Optionally specify a language code for better accuracy.
 """,
     status_code=200,
 )
@@ -62,24 +61,14 @@ async def transcribe_audio(
     ),
     openai_service: OpenAIService = Depends(get_openai_service),
 ) -> TranscribeResponse:
-    """Transcribe audio file to text using dual-flow processing.
+    """Transcribe audio file to text using single-pass high-quality transcription.
 
-    Implements two flows based on the language parameter:
-
-    **Flow 1 - Auto-detect (language is None/empty):**
-    1. Initial transcription with whisper-1 (detects language)
-    2. Generate optimized prompt via GPT-5-mini
-    3. Refined transcription with gpt-4o-transcribe + optimized prompt
-
-    **Flow 2 - User-specified language:**
-    1. Initial transcription with gpt-4o-mini-transcribe (using provided language)
-    2. Generate optimized prompt via GPT-5-mini
-    3. Refined transcription with gpt-4o-transcribe + optimized prompt
+    Uses gpt-4o-transcribe for consistent, high-quality results.
 
     Args:
         background_tasks: FastAPI background tasks for cleanup
         file: Uploaded audio file
-        language: Optional ISO 639-1 language code
+        language: Optional ISO 639-1 language code for better accuracy
         openai_service: OpenAI service dependency
 
     Returns:
@@ -104,82 +93,40 @@ async def transcribe_audio(
         temp_mp3 = get_temp_file_path(suffix=".mp3")
         await convert_to_mp3(temp_input, temp_mp3)
 
-        # Determine which flow to use
-        if language:
-            # ============================================================
-            # FLOW 2: User-specified language
-            # ============================================================
-            logger.info(f"Using Flow 2 (user-specified): language={language}")
+        # Stage 1: Speech-to-text with gpt-4o-transcribe
+        logger.info(f"Stage 1: Transcribing with gpt-4o-transcribe, language={language or 'auto'}")
 
-            # Step 1: Initial transcription with gpt-4o-mini-transcribe
-            with open(temp_mp3, "rb") as audio_file:
-                initial_text, _ = await openai_service.transcribe_audio(
-                    audio_file,
-                    language=language,
-                    model="gpt-4o-mini-transcribe",
-                )
-
-            # Step 2: Generate optimized prompt via GPT-4o-mini
-            optimized_prompt = await openai_service.generate_optimized_prompt(
+        with open(temp_mp3, "rb") as audio_file:
+            raw_text, detected_lang = await openai_service.transcribe_audio(
+                audio_file,
                 language=language,
-                initial_transcription=initial_text,
+                model="gpt-4o-transcribe",
             )
 
-            # Step 3: Refined transcription with gpt-4o-transcribe
-            with open(temp_mp3, "rb") as audio_file:
-                final_text, detected_lang = await openai_service.transcribe_audio(
-                    audio_file,
-                    language=language,
-                    prompt=optimized_prompt,
-                    model="gpt-4o-transcribe",
-                )
+        logger.info(f"Raw transcription: {len(raw_text)} chars")
 
-            # Use the user-specified language for the response
-            # Convert code to name for consistency
+        # Determine the language for refinement and response
+        if language:
             final_language = LANGUAGE_CODE_TO_NAME.get(language.lower(), language)
-
+            refinement_language = language
         else:
-            # ============================================================
-            # FLOW 1: Auto-detect language
-            # ============================================================
-            logger.info("Using Flow 1 (auto-detect)")
-
-            # Step 1: Initial transcription with whisper-1 (detects language)
-            with open(temp_mp3, "rb") as audio_file:
-                initial_text, detected_lang = await openai_service.transcribe_audio(
-                    audio_file,
-                    model="whisper-1",
-                )
-
-            # Determine the language for subsequent steps
-            # whisper-1 returns language codes, convert to name
-            detected_language = detected_lang or "en"  # Fallback to English
-            logger.info(f"Detected language: {detected_language}")
-
-            # Step 2: Generate optimized prompt via GPT-4o-mini
-            optimized_prompt = await openai_service.generate_optimized_prompt(
-                language=detected_language,
-                initial_transcription=initial_text,
-            )
-
-            # Step 3: Refined transcription with gpt-4o-transcribe
-            with open(temp_mp3, "rb") as audio_file:
-                final_text, _ = await openai_service.transcribe_audio(
-                    audio_file,
-                    language=detected_language,
-                    prompt=optimized_prompt,
-                    model="gpt-4o-transcribe",
-                )
-
-            # Convert language code to name for the response
+            detected_language = detected_lang or "en"
             final_language = LANGUAGE_CODE_TO_NAME.get(
                 detected_language.lower(), detected_language
             )
+            refinement_language = detected_language
+
+        # Stage 2: Linguistic refinement with GPT-5.1
+        logger.info(f"Stage 2: Refining transcription for {final_language}")
+        final_text = await openai_service.refine_transcription(
+            transcription=raw_text,
+            language=refinement_language,
+        )
 
         # Schedule cleanup
         background_tasks.add_task(cleanup_files, temp_input, temp_mp3)
 
-        logger.info(f"Dual-flow transcription complete: {len(final_text)} chars, language={final_language}")
+        logger.info(f"Transcription complete: {len(final_text)} chars, language={final_language}")
         return TranscribeResponse(text=final_text, language=final_language)
 
     except FileValidationError as e:

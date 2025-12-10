@@ -184,6 +184,8 @@ class DubbingStudioApp {
     const sourceLangSelect = document.getElementById('source-language');
     sourceLangSelect?.addEventListener('change', (e) => {
       state.sourceLanguage = e.target.value;
+      // Update transcript editor text direction for RTL languages
+      this.uiStateManager.updateEditorDirection();
     });
 
     const targetLangSelect = document.getElementById('target-language');

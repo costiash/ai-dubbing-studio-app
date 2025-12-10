@@ -53,6 +53,13 @@ export class UIStateManager {
     const editor = document.getElementById('transcript-editor');
     editor.value = this.state.transcription;
 
+    // Apply RTL/LTR direction to the transcript editor based on source language
+    if (editor) {
+      const isRTL = this.isRTL(this.state.sourceLanguage);
+      editor.style.direction = isRTL ? 'rtl' : 'ltr';
+      editor.style.textAlign = isRTL ? 'right' : 'left';
+    }
+
     // Update character count
     this.updateCharCount();
 
@@ -104,6 +111,19 @@ export class UIStateManager {
    */
   isRTL(language) {
     return UIStateManager.RTL_LANGUAGES.includes(language?.toLowerCase());
+  }
+
+  /**
+   * Update transcript editor text direction based on source language
+   * Call this when the source language changes
+   */
+  updateEditorDirection() {
+    const editor = document.getElementById('transcript-editor');
+    if (editor) {
+      const isRTL = this.isRTL(this.state.sourceLanguage);
+      editor.style.direction = isRTL ? 'rtl' : 'ltr';
+      editor.style.textAlign = isRTL ? 'right' : 'left';
+    }
   }
 
   /**

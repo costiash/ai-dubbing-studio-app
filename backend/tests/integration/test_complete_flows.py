@@ -20,7 +20,7 @@ class MockOpenAIService:
         """Initialize mock service with default behaviors."""
         self.api_key = "sk-test-key"  # Required by health check endpoint
         self.transcribe_audio = AsyncMock(return_value=("Test transcription", "en"))
-        self.generate_optimized_prompt = AsyncMock(return_value="Optimized prompt")
+        self.refine_transcription = AsyncMock(return_value="Refined transcription")
         self.translate_text = AsyncMock(return_value="Translated text")
         self.generate_speech = AsyncMock(return_value=b"fake-mp3-audio-data")
 
@@ -64,6 +64,9 @@ class TestCompleteWorkflows:
         # Configure mocks
         mock_openai_service_integration.transcribe_audio = AsyncMock(
             return_value=("Hello world", "en")
+        )
+        mock_openai_service_integration.refine_transcription = AsyncMock(
+            return_value="Hello world"  # Refinement returns same text for this test
         )
         mock_openai_service_integration.translate_text = AsyncMock(
             return_value="Hola mundo"
