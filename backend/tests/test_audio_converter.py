@@ -130,7 +130,7 @@ class TestAudioConverter:
 
         # Mock export to actually create the file
         # Note: pydub calls export(path, format="mp3") with keyword argument
-        def mock_export(path: str, format: str = "mp3") -> None:  # noqa: A002
+        def mock_export(path: str, format: str = "mp3") -> None:  # noqa: A002, ARG001
             Path(path).write_bytes(b"fake-mp3-data")
 
         mock_segment = mock_audio_segment.from_file.return_value

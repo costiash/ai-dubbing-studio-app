@@ -37,7 +37,7 @@ def mock_openai_service() -> MockOpenAIService:
 
 @pytest.fixture
 def client_with_mock_service(
-    test_settings: object,
+    test_settings: object,  # noqa: ARG001
     mock_openai_service: MockOpenAIService,
 ) -> Generator[TestClient]:
     """Create a test client with mocked OpenAI service via dependency override."""
@@ -51,7 +51,7 @@ def client_with_mock_service(
     app.dependency_overrides.clear()
 
 
-def mock_convert_to_mp3_with_file(input_path: object, output_path: object) -> None:
+def mock_convert_to_mp3_with_file(_input_path: object, output_path: object) -> None:
     """Mock convert_to_mp3 that creates an empty file to satisfy the route."""
     from pathlib import Path
     Path(output_path).write_bytes(b"fake-mp3-data")
@@ -64,14 +64,15 @@ class TestTranscribeEndpoint:
     def test_transcribe_success(
         self,
         client_with_mock_service: TestClient,
-        mock_openai_service: MockOpenAIService,
+        mock_openai_service: MockOpenAIService,  # noqa: ARG002
     ) -> None:
         """Test successful audio transcription with dual-flow."""
+        _ = mock_openai_service  # Used via client_with_mock_service fixture
         audio_content = b"fake-mp3-audio-data"
         files = {"file": ("test.mp3", io.BytesIO(audio_content), "audio/mpeg")}
 
-        async def mock_convert(input_path: object, output_path: object) -> None:
-            mock_convert_to_mp3_with_file(input_path, output_path)
+        async def mock_convert(_input_path: object, output_path: object) -> None:
+            mock_convert_to_mp3_with_file(_input_path, output_path)
 
         with patch("backend.api.routes.v1.audio.convert_to_mp3", side_effect=mock_convert):
             response = client_with_mock_service.post("/api/v1/audio/transcribe", files=files)
@@ -84,14 +85,15 @@ class TestTranscribeEndpoint:
     def test_transcribe_with_ogg_file(
         self,
         client_with_mock_service: TestClient,
-        mock_openai_service: MockOpenAIService,
+        mock_openai_service: MockOpenAIService,  # noqa: ARG002
     ) -> None:
         """Test transcription with OGG file."""
+        _ = mock_openai_service  # Used via client_with_mock_service fixture
         audio_content = b"OggS" + b"fake-ogg-data"
         files = {"file": ("test.ogg", io.BytesIO(audio_content), "audio/ogg")}
 
-        async def mock_convert(input_path: object, output_path: object) -> None:
-            mock_convert_to_mp3_with_file(input_path, output_path)
+        async def mock_convert(_input_path: object, output_path: object) -> None:
+            mock_convert_to_mp3_with_file(_input_path, output_path)
 
         with patch("backend.api.routes.v1.audio.convert_to_mp3", side_effect=mock_convert):
             response = client_with_mock_service.post("/api/v1/audio/transcribe", files=files)
@@ -151,13 +153,14 @@ class TestTranscribeEndpoint:
     def test_transcribe_cleans_up_temp_files(
         self,
         client_with_mock_service: TestClient,
-        mock_openai_service: MockOpenAIService,
+        mock_openai_service: MockOpenAIService,  # noqa: ARG002
     ) -> None:
         """Test transcription schedules temp file cleanup."""
+        _ = mock_openai_service  # Used via client_with_mock_service fixture
         files = {"file": ("test.mp3", io.BytesIO(b"fake-audio"), "audio/mpeg")}
 
-        async def mock_convert(input_path: object, output_path: object) -> None:
-            mock_convert_to_mp3_with_file(input_path, output_path)
+        async def mock_convert(_input_path: object, output_path: object) -> None:
+            mock_convert_to_mp3_with_file(_input_path, output_path)
 
         with patch("backend.api.routes.v1.audio.convert_to_mp3", side_effect=mock_convert):
             response = client_with_mock_service.post("/api/v1/audio/transcribe", files=files)

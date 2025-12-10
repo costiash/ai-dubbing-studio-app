@@ -36,7 +36,7 @@ def mock_openai_service_security() -> MockOpenAIService:
 
 @pytest.fixture
 def security_client(
-    test_settings: object,
+    test_settings: object,  # noqa: ARG001
     mock_openai_service_security: MockOpenAIService,
 ) -> Generator[TestClient]:
     """Create a test client with mocked OpenAI service for security tests."""
@@ -48,7 +48,7 @@ def security_client(
     app.dependency_overrides.clear()
 
 
-def mock_convert_to_mp3_with_file(input_path: object, output_path: object) -> None:
+def mock_convert_to_mp3_with_file(_input_path: object, output_path: object) -> None:
     """Mock convert_to_mp3 that creates an empty file."""
     from pathlib import Path
     Path(output_path).write_bytes(b"fake-mp3-data")
@@ -98,9 +98,10 @@ class TestFileUploadSecurity:
     def test_file_size_limit_enforcement(
         self,
         security_client: TestClient,
-        mock_openai_service_security: MockOpenAIService,
+        mock_openai_service_security: MockOpenAIService,  # noqa: ARG002
     ) -> None:
         """Test that file size limits are enforced."""
+        _ = mock_openai_service_security  # Used via security_client fixture
         # Test with reasonable size that should pass
         normal_file = io.BytesIO(b"x" * (1024 * 1024))  # 1 MB
         files = {"file": ("test.mp3", normal_file, "audio/mpeg")}

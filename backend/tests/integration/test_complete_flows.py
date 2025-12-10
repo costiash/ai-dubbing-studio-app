@@ -33,7 +33,7 @@ def mock_openai_service_integration() -> MockOpenAIService:
 
 @pytest.fixture
 def integration_client(
-    test_settings: object,
+    test_settings: object,  # noqa: ARG001
     mock_openai_service_integration: MockOpenAIService,
 ) -> Generator[TestClient]:
     """Create a test client with mocked OpenAI service for integration tests."""
@@ -45,7 +45,7 @@ def integration_client(
     app.dependency_overrides.clear()
 
 
-def mock_convert_to_mp3_with_file(input_path: object, output_path: object) -> None:
+def mock_convert_to_mp3_with_file(_input_path: object, output_path: object) -> None:
     """Mock convert_to_mp3 that creates an empty file."""
     from pathlib import Path
     Path(output_path).write_bytes(b"fake-mp3-data")
@@ -169,8 +169,8 @@ class TestCompleteWorkflows:
 
         # The route calls translate_text with keyword arguments
         async def mock_translate(
-            text: str,
-            source_language: str,
+            text: str,  # noqa: ARG001
+            source_language: str,  # noqa: ARG001
             target_language: str,
         ) -> str:
             return translations.get(target_language, "Translated")
