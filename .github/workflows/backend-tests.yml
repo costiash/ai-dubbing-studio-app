@@ -6,6 +6,12 @@ on:
   pull_request:
     branches: [ main, develop ]
 
+# Required for publish-unit-test-result-action to create check runs
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
 jobs:
   test:
     name: Backend Test Suite
@@ -146,6 +152,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: test-results
+          path: test-results
+
+      - name: List downloaded files (debug)
+        run: |
+          echo "=== Downloaded test results ==="
+          find . -name "*.xml" -type f || echo "No XML files found"
+          ls -la test-results/ || echo "test-results directory not found"
 
       - name: Publish test results
         uses: EnricoMi/publish-unit-test-result-action@v2
