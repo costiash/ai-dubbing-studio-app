@@ -71,7 +71,13 @@ if uploaded_file and st.session_state.api_client:
                     transcript = st.session_state.api_client.audio.transcriptions.create(
                         model="gpt-4o-transcribe", 
                         file=audio_file, 
-                        response_format="json"
+                        response_format="json",
+                        temperature=0,
+                        prompt=(
+                            "You are a meticulous professional transcriber. "
+                            "Accurately transcribe the spoken content with correct punctuation and capitalization. "
+                            f"The audio language is {input_lang}. Do not translate or summarize."
+                        ),
                     )
                 # Handle response safely
                 res_text = transcript.text if hasattr(transcript, 'text') else transcript['text']
