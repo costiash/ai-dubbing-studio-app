@@ -49,8 +49,13 @@ if st.sidebar.button("Validate Key") and api_key_input:
 
 if st.session_state.api_client:
     st.sidebar.markdown("---")
-    tts_model = st.sidebar.selectbox("TTS Model", ["tts-1", "tts-1-hd"])
-    tts_voice = st.sidebar.selectbox("Voice", ["alloy", "echo", "fable", "onyx", "nova", "shimmer"], index=3)
+    tts_model = "gpt-4o-mini-tts"
+    st.sidebar.markdown(f"TTS Model: **{tts_model}**")
+    tts_voice = st.sidebar.selectbox(
+        "Voice",
+        ["alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer"],
+        index=3,
+    )
 
 # --- Main UI ---
 st.title("🎙️ AI Dubbing Studio")
@@ -107,9 +112,33 @@ if st.session_state.transcription_text:
                 trans_text = trans_resp.choices[0].message.content
                 st.session_state.translated_text = trans_text
                 
+                guidance_resp = st.session_state.api_client.chat.completions.create(
+                    model="gpt-5.1",
+                    messages=[
+                        {
+                            "role": "system",
+                            "content": (
+                                "You are a voice director. Given a transcript and its context, "
+                                "produce concise delivery instructions (tone, pacing, emotion, emphasis) "
+                                "for the text-to-speech engine. Do not rewrite or translate the text; only "
+                                "return the instructions in under 60 words."
+                            ),
+                        },
+                        {
+                            "role": "user",
+                            "content": (
+                                f"Source language: {input_lang}\n"
+                                f"Target language: {output_lang}\n"
+                                f"Transcript: {st.session_state.transcription_text}"
+                            ),
+                        },
+                    ],
+                )
+                tts_instructions = guidance_resp.choices[0].message.content.strip()
+                
                 # TTS
                 speech_resp = st.session_state.api_client.audio.speech.create(
-                    model=tts_model, voice=tts_voice, input=trans_text
+                    model=tts_model, voice=tts_voice, input=trans_text, instructions=tts_instructions
                 )
                 with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as tmp:
                     for chunk in speech_resp.iter_bytes(): tmp.write(chunk)
