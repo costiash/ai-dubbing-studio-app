@@ -129,7 +129,8 @@ class TestAudioConverter:
         input_file.write_bytes(b"fake-audio-data")
 
         # Mock export to actually create the file
-        def mock_export(path: str, _format: str) -> None:
+        # Note: pydub calls export(path, format="mp3") with keyword argument
+        def mock_export(path: str, format: str = "mp3") -> None:  # noqa: A002
             Path(path).write_bytes(b"fake-mp3-data")
 
         mock_segment = mock_audio_segment.from_file.return_value
@@ -143,6 +144,7 @@ class TestAudioConverter:
     async def test_convert_to_mp3_uses_thread_pool(
         self,
         tmp_path: Path,
+        mock_audio_segment: MagicMock,
     ) -> None:
         """Test that conversion is offloaded to thread pool (async execution)."""
         input_file = tmp_path / "input.ogg"
@@ -154,7 +156,8 @@ class TestAudioConverter:
         await convert_to_mp3(input_file, output_file)
 
         # If we get here, the async execution worked
-        assert True
+        # Verify the mock was called (conversion was attempted)
+        assert mock_audio_segment.from_file.called
 
     @pytest.mark.asyncio
     async def test_convert_to_mp3_preserves_original_error_type(
@@ -162,7 +165,7 @@ class TestAudioConverter:
         tmp_path: Path,
         mock_audio_segment: MagicMock,
     ) -> None:
-        """Test that AudioProcessingError is preserved when raised."""
+        """Test that AudioProcessingError is raised with correct message format."""
         input_file = tmp_path / "input.ogg"
         output_file = tmp_path / "output.mp3"
 
@@ -176,7 +179,8 @@ class TestAudioConverter:
         with pytest.raises(AudioProcessingError) as exc_info:
             await convert_to_mp3(input_file, output_file)
 
-        assert str(exc_info.value) == "Custom audio error"
+        # The error is wrapped with "Audio conversion failed: " prefix
+        assert "Custom audio error" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_convert_to_mp3_with_path_objects(

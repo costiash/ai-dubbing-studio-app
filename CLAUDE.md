@@ -84,7 +84,7 @@ async handleOperation() {
 
 ## Testing
 
-- **Backend:** `uv run pytest backend/tests/` (114 tests, 76% coverage)
+- **Backend:** `uv run pytest backend/tests/` (143 tests, 86% coverage)
 - **Frontend:** `cd frontend && npm test` (163 tests, 100% coverage)
 - See @docs/TESTING.md for complete testing guide
 

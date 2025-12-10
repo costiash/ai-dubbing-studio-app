@@ -81,11 +81,12 @@ class TestFileHandlers:
 
     def test_validate_audio_file_success(self) -> None:
         """Test validate_audio_file with valid file."""
+        # In newer FastAPI versions, content_type must be set via headers parameter
         file = UploadFile(
             filename="test.mp3",
             file=io.BytesIO(b"fake data"),
+            headers={"content-type": "audio/mpeg"},
         )
-        file.content_type = "audio/mpeg"
 
         # Should not raise exception
         validate_audio_file(file)
@@ -139,11 +140,12 @@ class TestFileHandlers:
 
     def test_validate_audio_file_warns_on_mismatched_content_type(self) -> None:
         """Test validate_audio_file warns but accepts mismatched content type."""
+        # In newer FastAPI versions, content_type must be set via headers parameter
         file = UploadFile(
             filename="test.mp3",
             file=io.BytesIO(b"fake data"),
+            headers={"content-type": "application/octet-stream"},  # Wrong content type
         )
-        file.content_type = "application/octet-stream"  # Wrong content type
 
         # Should still pass (only extension matters)
         validate_audio_file(file)

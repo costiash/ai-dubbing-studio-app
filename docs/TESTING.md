@@ -2,9 +2,9 @@
 
 Complete guide for running tests, writing tests, and understanding the testing infrastructure for the AI Dubbing Studio project.
 
-**Last Updated:** 2025-12-09
-**Coverage:** 76.20% (Target: 80%+)
-**Total Tests:** 114 tests
+**Last Updated:** 2025-12-10
+**Coverage:** 86.28% (Target: 80%+) ✅
+**Total Tests:** 143 tests
 
 ---
 
@@ -90,10 +90,10 @@ backend/tests/
 
 | Category | Tests | Purpose |
 |----------|-------|---------|
-| **Unit Tests** | 85 | Test individual components in isolation |
-| **Integration Tests** | 12 | Test complete workflows end-to-end |
+| **Unit Tests** | 104 | Test individual components in isolation |
+| **Integration Tests** | 20 | Test complete workflows end-to-end |
 | **Security Tests** | 19 | Test input validation and security measures |
-| **Total** | **114** | Complete test coverage |
+| **Total** | **143** | Complete test coverage |
 
 ---
 
@@ -177,20 +177,20 @@ uv run mypy backend/
 
 ## Test Coverage
 
-### Current Coverage: 76.20%
+### Current Coverage: 86.28%
 
 | Component | Coverage | Status |
 |-----------|----------|--------|
-| Configuration | 100% | Excellent |
+| Configuration | 95.45% | Excellent |
 | Exceptions | 100% | Excellent |
 | Schemas | 100% | Excellent |
 | Logging | 100% | Excellent |
+| Health Routes | 100% | Excellent |
 | Audio Converter | 96.15% | Excellent |
-| File Handlers | 90.70% | Good |
-| Health Routes | 87.50% | Good |
-| OpenAI Client | 84.62% | Good |
-| API Main | 69.57% | Needs improvement |
-| Audio Routes | 22.97% | Needs improvement |
+| File Handlers | 93.02% | Excellent |
+| API Main | 84.62% | Good |
+| Audio Routes | 80.00% | Good |
+| OpenAI Client | 76.60% | Good |
 
 ### Test Files Manifest
 
@@ -269,6 +269,37 @@ def test_with_fixtures(
     response = client.get("/health")
     assert response.status_code == 200
 ```
+
+### Mocking FastAPI Dependencies (Important!)
+
+**⚠️ Do NOT use `patch()` for FastAPI dependencies.** FastAPI's dependency injection system ignores standard Python patches. Use `app.dependency_overrides` instead:
+
+```python
+from backend.api.main import app
+from backend.services.openai_client import get_openai_service
+
+class MockOpenAIService:
+    """Mock OpenAI service for testing."""
+    def __init__(self) -> None:
+        self.api_key = "sk-test-key"  # Required by health check
+        self.transcribe_audio = AsyncMock(return_value=("Transcription", "en"))
+        self.translate_text = AsyncMock(return_value="Translated")
+        self.generate_speech = AsyncMock(return_value=b"audio-bytes")
+
+@pytest.fixture
+def client_with_mock(mock_service: MockOpenAIService) -> Generator[TestClient]:
+    """Create test client with mocked service."""
+    # Override the dependency
+    app.dependency_overrides[get_openai_service] = lambda: mock_service
+
+    with TestClient(app) as client:
+        yield client
+
+    # Clean up
+    app.dependency_overrides.clear()
+```
+
+**Why?** FastAPI resolves dependencies at request time using its own DI container. `patch()` modifies Python's import system but doesn't affect FastAPI's container.
 
 ### Async Tests
 
@@ -488,6 +519,42 @@ uv run pytest --cov=backend --cov-report=term-missing
 - Check patch path is correct
 - Ensure mock is applied before function is imported
 - Verify mock return value is correct type
+- **For FastAPI dependencies:** Use `app.dependency_overrides`, NOT `patch()` (see [Mocking FastAPI Dependencies](#mocking-fastapi-dependencies-important))
+
+**Python 3.13+ TypeError with Exception mocking:**
+```
+TypeError: cannot set '__name__' attribute of immutable type 'Exception'
+```
+- Python 3.13 made `__name__` immutable on built-in types
+- **Fix:** Create dynamic exception classes with `type()`:
+  ```python
+  # Wrong (breaks in Python 3.13+)
+  error = Exception("message")
+  error.__class__.__name__ = "CustomError"
+
+  # Correct
+  CustomError = type("CustomError", (Exception,), {})
+  error = CustomError("message")
+  ```
+
+**UploadFile content_type setter error:**
+```
+AttributeError: property 'content_type' has no setter
+```
+- Newer FastAPI versions made `content_type` read-only
+- **Fix:** Pass via `headers` parameter:
+  ```python
+  # Wrong
+  file = UploadFile(filename="test.mp3", file=io.BytesIO(data))
+  file.content_type = "audio/mpeg"  # Fails!
+
+  # Correct
+  file = UploadFile(
+      filename="test.mp3",
+      file=io.BytesIO(data),
+      headers={"content-type": "audio/mpeg"}
+  )
+  ```
 
 ---
 

@@ -23,7 +23,7 @@ class TestSettings:
         assert settings.temp_dir == "/tmp/ai-dubbing-studio"
         assert settings.transcription_model == "gpt-4o-transcribe"
         assert settings.translation_model == "gpt-5.1"
-        assert settings.tts_model_default == "tts-1"
+        assert settings.tts_model_default == "gpt-4o-mini-tts"  # Updated default model
         assert settings.tts_voice_default == "onyx"
 
     def test_settings_with_custom_values(self) -> None:
@@ -135,7 +135,7 @@ class TestSettings:
 
         assert settings.transcription_model == "gpt-4o-transcribe"
         assert settings.translation_model == "gpt-5.1"
-        assert settings.tts_model_default == "tts-1"
+        assert settings.tts_model_default == "gpt-4o-mini-tts"  # Updated default model
 
     def test_settings_immutable_after_creation(self) -> None:
         """Test that settings are immutable (frozen) after creation."""

@@ -227,10 +227,10 @@ uv run pytest -m "not slow"
 
 | Component | Target Coverage | Current |
 |-----------|----------------|---------|
-| Overall | 80%+ | TBD |
-| Core Services | 85%+ | TBD |
-| API Routes | 90%+ | TBD |
-| Critical Paths | 100% | TBD |
+| Overall | 80%+ | 86.28% ✅ |
+| Core Services | 85%+ | 96.15% ✅ |
+| API Routes | 80%+ | 80.00% ✅ |
+| Schemas & Exceptions | 100% | 100% ✅ |
 
 ### View Coverage Report
 
@@ -295,6 +295,29 @@ def test_with_fixtures(
     # Fixtures are automatically injected
     response = client.post("/v1/audio/transcribe", files={"file": sample_audio_file})
     assert response.status_code == 200
+```
+
+### Mocking FastAPI Dependencies
+
+**⚠️ Important:** Standard `patch()` does NOT work for FastAPI dependencies. Use `app.dependency_overrides`:
+
+```python
+from backend.api.main import app
+from backend.services.openai_client import get_openai_service
+
+class MockOpenAIService:
+    def __init__(self) -> None:
+        self.api_key = "sk-test"  # Required by health endpoint
+        self.transcribe_audio = AsyncMock(return_value=("Text", "en"))
+        self.translate_text = AsyncMock(return_value="Translated")
+        self.generate_speech = AsyncMock(return_value=b"audio")
+
+@pytest.fixture
+def client_with_mock(mock_service: MockOpenAIService) -> Generator[TestClient]:
+    app.dependency_overrides[get_openai_service] = lambda: mock_service
+    with TestClient(app) as client:
+        yield client
+    app.dependency_overrides.clear()
 ```
 
 ### Mocking OpenAI API

@@ -70,18 +70,20 @@ class TestOpenAIService:
         assert call_kwargs["language"] == "es"
 
     @pytest.mark.asyncio
-    async def test_transcribe_audio_handles_dict_response(
+    async def test_transcribe_audio_handles_pydantic_response(
         self,
         sample_audio_file: BinaryIO,
     ) -> None:
-        """Test transcription handles dict-style response."""
+        """Test transcription handles Pydantic model response (standard OpenAI SDK)."""
         service = OpenAIService(api_key="sk-test-key")
         mock_client = MagicMock()
 
-        # Mock response as dict (some API versions return dict)
-        mock_client.audio.transcriptions.create = AsyncMock(
-            return_value={"text": "Test text", "language": "fr"}
-        )
+        # Mock response as Pydantic-like object (actual OpenAI SDK behavior)
+        mock_response = MagicMock()
+        mock_response.text = "Test text"
+        mock_response.language = "fr"
+
+        mock_client.audio.transcriptions.create = AsyncMock(return_value=mock_response)
         service.client = mock_client
 
         text, language = await service.transcribe_audio(sample_audio_file)

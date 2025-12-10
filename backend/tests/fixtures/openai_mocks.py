@@ -115,10 +115,10 @@ def create_mock_openai_error(
     Returns:
         Mock exception object
     """
-    error = Exception(message)
-    error.__class__.__name__ = error_type
-
-    return error
+    # Create a custom exception class dynamically since Python 3.13 doesn't
+    # allow modifying __name__ on immutable built-in types
+    custom_exception_class = type(error_type, (Exception,), {})
+    return custom_exception_class(message)
 
 
 class MockOpenAIStream:
