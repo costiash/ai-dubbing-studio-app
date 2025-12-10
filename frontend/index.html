@@ -53,6 +53,24 @@
     <!-- Main Content Area -->
     <main id="main-content" class="app-main">
 
+      <!-- Progress Step Indicator -->
+      <nav class="progress-steps" aria-label="Dubbing workflow progress">
+        <ol class="progress-steps__list">
+          <li class="progress-steps__item progress-steps__item--active" data-step="upload">
+            <span class="progress-steps__number">1</span>
+            <span class="progress-steps__label">Upload</span>
+          </li>
+          <li class="progress-steps__item" data-step="transcribe">
+            <span class="progress-steps__number">2</span>
+            <span class="progress-steps__label">Edit & Translate</span>
+          </li>
+          <li class="progress-steps__item" data-step="results">
+            <span class="progress-steps__number">3</span>
+            <span class="progress-steps__label">Download</span>
+          </li>
+        </ol>
+      </nav>
+
       <!-- Step 1: Upload Audio -->
       <section id="upload-section" class="section">
         <div

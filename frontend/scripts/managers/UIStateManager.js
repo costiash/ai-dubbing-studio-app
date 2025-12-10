@@ -11,10 +11,39 @@ export class UIStateManager {
   }
 
   /**
+   * Update progress step indicator based on current step
+   * @param {string} currentStep - Current step: 'upload', 'transcribe', or 'results'
+   */
+  updateProgressSteps(currentStep) {
+    const steps = ['upload', 'transcribe', 'results'];
+    const currentIndex = steps.indexOf(currentStep);
+
+    steps.forEach((step, index) => {
+      const stepElement = document.querySelector(`.progress-steps__item[data-step="${step}"]`);
+      if (!stepElement) return;
+
+      // Reset classes
+      stepElement.classList.remove('progress-steps__item--active', 'progress-steps__item--completed');
+
+      if (index < currentIndex) {
+        // Previous steps are completed
+        stepElement.classList.add('progress-steps__item--completed');
+      } else if (index === currentIndex) {
+        // Current step is active
+        stepElement.classList.add('progress-steps__item--active');
+      }
+      // Future steps remain default (inactive)
+    });
+  }
+
+  /**
    * Show transcription section after upload
    */
   showTranscriptionSection() {
     this.state.currentStep = 'transcribe';
+
+    // Update progress indicator
+    this.updateProgressSteps('transcribe');
 
     // Hide upload, show transcribe
     document.getElementById('upload-section').classList.add('hidden');
@@ -64,11 +93,28 @@ export class UIStateManager {
   }
 
   /**
+   * RTL (Right-to-Left) languages for text direction
+   */
+  static RTL_LANGUAGES = ['hebrew', 'arabic', 'persian', 'urdu'];
+
+  /**
+   * Check if a language is RTL
+   * @param {string} language - Language name
+   * @returns {boolean} - True if RTL language
+   */
+  isRTL(language) {
+    return UIStateManager.RTL_LANGUAGES.includes(language?.toLowerCase());
+  }
+
+  /**
    * Show results section after translation/TTS
    * @param {Object} audioReactiveUI - AudioReactiveUI instance to wire up
    */
   showResults(audioReactiveUI) {
     this.state.currentStep = 'results';
+
+    // Update progress indicator
+    this.updateProgressSteps('results');
 
     // Hide transcribe, show results
     document.getElementById('transcribe-section').classList.add('hidden');
@@ -86,16 +132,32 @@ export class UIStateManager {
       generatedTitle.textContent = `Generated Audio (${this.capitalize(this.state.targetLanguage)})`;
     }
 
-    // Display transcripts
+    // Display transcripts with proper text direction
     const originalTranscript = document.getElementById('original-transcript');
     const translatedTranscript = document.getElementById('translated-transcript');
 
     if (originalTranscript) {
       originalTranscript.textContent = this.state.transcription;
+      // Apply RTL/LTR class to parent container
+      const originalContainer = originalTranscript.closest('.transcript-display');
+      if (originalContainer) {
+        originalContainer.classList.remove('transcript-display--rtl', 'transcript-display--ltr');
+        originalContainer.classList.add(
+          this.isRTL(this.state.sourceLanguage) ? 'transcript-display--rtl' : 'transcript-display--ltr'
+        );
+      }
     }
 
     if (translatedTranscript) {
       translatedTranscript.textContent = this.state.translation;
+      // Apply RTL/LTR class to parent container
+      const translatedContainer = translatedTranscript.closest('.transcript-display');
+      if (translatedContainer) {
+        translatedContainer.classList.remove('transcript-display--rtl', 'transcript-display--ltr');
+        translatedContainer.classList.add(
+          this.isRTL(this.state.targetLanguage) ? 'transcript-display--rtl' : 'transcript-display--ltr'
+        );
+      }
     }
 
     // Load audio players
@@ -130,6 +192,9 @@ export class UIStateManager {
    * Reset UI to initial state
    */
   reset() {
+    // Update progress indicator to first step
+    this.updateProgressSteps('upload');
+
     // Show upload section, hide others
     document.getElementById('upload-section').classList.remove('hidden');
     document.getElementById('transcribe-section').classList.add('hidden');
